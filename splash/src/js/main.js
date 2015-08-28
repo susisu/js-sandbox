@@ -5,7 +5,7 @@
     var canvas, renderer, stage;
 
     function main() {
-        for (var i = 0; i < 1; i++) {
+        for (var i = 0; i < 3; i++) {
             var r1 = Math.random(),
                 r2 = Math.random(),
                 z1 = Math.sqrt(-2.0 * Math.log(r1)) * Math.cos(2 * Math.PI * r2),
@@ -24,9 +24,10 @@
 
     function Splash(size) {
         PIXI.Graphics.call(this);
-       
-       function draw(splash, m, x, y, vx, vy, gen, maxGen) {
-            splash.beginFill(0x000000)
+        this.tint = Math.random() * 0x1000000 >> 0;
+
+        function draw(splash, m, x, y, vx, vy, gen, maxGen) {
+            splash.beginFill(0xFFFFFF)
                 .drawCircle(x, y, Math.sqrt(m))
                 .endFill();
 
@@ -61,9 +62,9 @@
         ];
         var cmf2    = new PIXI.filters.ColorMatrixFilter();
         cmf2.matrix = [
-            1, 0, 0,   0, Math.random(),
-            0, 1, 0,   0, Math.random(),
-            0, 0, 1,   0, Math.random(),
+            1, 0, 0,   0, 0,
+            0, 1, 0,   0, 0,
+            0, 0, 1,   0, 0,
             0, 0, 0, 100, 0
         ];
         this.filters = [bf, cmf1, cmf2];
@@ -89,7 +90,7 @@
                 "antialias"  : true,
                 "autoResize" : true,
                 "resolution" : window.devicePixelRatio,
-                "transparent": true
+                "transparent": false
             });
 
         stage = new PIXI.Container();
