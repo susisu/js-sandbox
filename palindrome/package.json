@@ -1,0 +1,14 @@
+{
+  "name": "palindrome",
+  "version": "0.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
+  "license": "MIT",
+  "dependencies": {
+    "mecab-async": "git://github.com/susisu/node-mecab-async.git"
+  }
+}
