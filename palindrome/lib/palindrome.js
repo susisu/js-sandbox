@@ -1,20 +1,16 @@
+/*
+ * copyright (c) 2015 Susisu
+ */
+
 "use strict";
 
 var MeCab = require("mecab-async");
 var mecab = new MeCab();
 mecab.command = "mecab -d /usr/local/lib/mecab/dic/ipadic"
 
-process.stdin.resume();
-process.stdin.setEncoding("utf8");
-
-var input = "";
-process.stdin.on("data", function (chunk) {
-    input += chunk;
-});
-
-process.stdin.on("end", function () {
+function extract(input, minLength) {
     var words = mecab.parseSync(input);
-    // var palindromes = [];
+    var palindromes = [];
     for (var i = 0; i < words.length; i++) {
         // 読みが不明ということになるカタカナのみの語を修正
         if (!words[i][8] && /^[ァ-ヺ]+$/.test(words[i][0])) {
@@ -28,6 +24,7 @@ process.stdin.on("end", function () {
             continue;
         }
         var ws = [];
+        var longest = "";
         for (var j = i; j < words.length; j++) {
             // EOS または括弧閉、読みの不明な単語が来たら区切る
             if (words[j].length <= 1 ||
@@ -42,19 +39,20 @@ process.stdin.on("end", function () {
                 words[j][6] !== "基本形") {
                 continue;
             }
-            if (isPalindrome(ws, 5)) {
-                console.log(joinWords(ws));
-                // palindromes.push(joinWords(ws));
+            if (isPalindrome(ws, minLength)) {
+                longest = joinWords(ws);
             }
             // 句点で終わっていたら区切る
             if (words[j][2] === "句点") {
                 break;
             }
         }
+        if (longest.length > 0) {
+            palindromes.push(longest);
+        }
     }
-    // console.log(palindromes);
-    process.exit(0);
-});
+    return palindromes;
+}
 
 // 拗音、促音、濁音、半濁音を清音と同一化する
 function normalizeReading(reading) {
@@ -128,3 +126,7 @@ function joinWords(words) {
             .join("");
     return kanji;
 }
+
+module.exports = Object.freeze({
+    "extract": extract
+});

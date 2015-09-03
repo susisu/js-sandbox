@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+/*
+ * copyright (c) 2015 Susisu
+ */
+
+"use strict";
+
+var palindrome = require("../index.js");
+
+process.stdin.resume();
+process.stdin.setEncoding("utf8");
+
+var input = "";
+process.stdin.on("data", function (chunk) {
+    input += chunk;
+});
+
+process.stdin.on("end", function () {
+    var result = palindrome.extract(input, 6);
+    result.forEach(function (p) {
+        console.log(p);
+    })
+    process.exit(0);
+});
