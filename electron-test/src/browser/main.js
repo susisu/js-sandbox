@@ -5,26 +5,22 @@
 "use strict";
 
 var app = require("app");
-
 var BrowserWindow = require("browser-window");
+var http = require("http");
+var IOServer = require("socket.io");
 
 require("crash-reporter").start();
 
 app.once("ready", onReady);
 
 var mainWindow = null;
+var server = null;
+var io = null;
 
 function onReady(event) {
     openMainWindow();
-    
-    app.on("window-all-closed", onWindowAllClosed);
-}
 
-function onWindowAllClosed(event) {
-    if (process.platform != "darwin") {
-        app.removeListener("window-all-closed", onWindowAllClosed);
-        app.quit();
-    }
+    setupServer(9000);
 }
 
 function openMainWindow() {
@@ -36,4 +32,32 @@ function openMainWindow() {
 
 function onMainWindowClosed(event) {
     mainWindow = null;
+
+    server.close();
+    io.removeListener("connection", onIOConnection);
+    server = null;
+    io = null;
+
+    app.quit();
+}
+
+function setupServer(port) {
+    server = http.createServer(function (request, response) {
+        response.writeHead(200);
+        response.end("It works!");
+    });
+    server.listen(port);
+
+    io = new IOServer(server);
+    io.on("connection", onIOConnection);
+}
+
+function onIOConnection(socket) {
+    socket.once("disconnect", onDisconnect);
+
+    io.emit("newConnection", "test");
+
+    function onDisconnect() {
+        console.log("user disconnected");
+    }
 }
