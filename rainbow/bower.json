@@ -1,0 +1,16 @@
+{
+  "name": "rainbow",
+  "version": "0.0.0",
+  "homepage": "https://github.com/susisu/js-sandbox",
+  "authors": [
+    "Susisu <susisu2413@yahoo.co.jp>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
