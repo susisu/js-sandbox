@@ -46,6 +46,23 @@ Var.prototype.eval = function (env) {
     return env[this.name];
 }
 
+function Lambda(argName, body) {
+    if (!(this instanceof Lambda)) {
+        return new Lambda(argName, body);
+    }
+    this.argName = argName;
+    this.body    = body;
+}
+Lambda.prototype.eval = function (env) {
+    var argName = this.argName;
+    var body    = this.body;
+    return Val(function (x) {
+        var local = Object.create(env);
+        local[argName] = x;
+        return body.eval(local);
+    });
+};
+
 function Ret(expr) {
     if (!(this instanceof Ret)) {
         return new Ret(expr);
