@@ -83,25 +83,6 @@ Ret.prototype.eval = function (env) {
     }
 };
 
-function CallCC(func) {
-    if (!(this instanceof CallCC)) {
-        return new CallCC(func);
-    }
-    this.func = func;
-}
-CallCC.prototype.eval = function (env) {
-    var _func = this.func.eval(env);
-    if (_func instanceof Val) {
-        return Cont(_func, function (x) { return x; });
-    }
-    else if (_func instanceof Cont) {
-        return Cont(_func.func, function (x) { return CallCC(Lit(_func.cont(x))).eval(env); });
-    }
-    else if (_func instanceof Next) {
-        return _func;
-    }
-};
-
 function App(func, arg) {
     if (!(this instanceof App)) {
         return new App(func, arg);
@@ -133,6 +114,9 @@ App.prototype.eval = function (env) {
 };
 
 var env = Object.create(null);
+env["call/cc"] = Val(function (func) {
+    return Cont(func, function (x) { return x; });
+});
 env["x"] = Val(1);
 env["y"] = Val(2);
 env["+"] = Val(function (x) {
@@ -141,35 +125,44 @@ env["+"] = Val(function (x) {
     });
 });
 
-// (+ x (call/cc (lambda (cont) (set! f cont) 2)))
 debug(
     Ret(
         App(
             App(Var("+"), Var("x")),
-            CallCC(Lit(Val(function (cont) {
+            App(Var("call/cc"), Lit(Val(function (cont) {
                 env["f"] = cont;
                 return Val(2);
             })))
         )
     ).eval(env)
-); // -> 3
+);
 
 env["x"] = Val(100);
 
-// (f 3)
 debug(
     Ret(
         App(Var("f"), Lit(Val(3)))
     ).eval(env)
-); // -> 4
+);
 
-// (call/cc (lambda (return) (call/cc (lambda (cont) (return 5)))))
 debug(
     Ret(
-        CallCC(Lambda("return",
-            CallCC(Lambda("cont",
-                App(Var("return"), Lit(Val(5)))
+        App(Var("call/cc"), Lambda("ret1",
+            App(Var("call/cc"), Lambda("ret2",
+                App(Var("ret1"), Lit(Val(5)))
             ))
         ))
     ).eval(env)
-); // -> 5
+);
+
+debug(
+    Ret(
+        App(Var("call/cc"),
+            App(Var("call/cc"), Lambda("ret1",
+                App(Var("ret1"), Lambda("ret2",
+                    App(Var("ret2"), Lit(Val(6)))
+                ))
+            ))
+        )
+    ).eval(env)
+);
