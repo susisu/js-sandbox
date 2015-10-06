@@ -70,18 +70,18 @@ function Ret(expr) {
     this.expr = expr;
 }
 Ret.prototype.eval = function (env) {
-    var _value = this.expr.eval(env);
-    if (_value instanceof Val) {
-        return Next(_value);
+    var _expr = this.expr.eval(env);
+    if (_expr instanceof Val) {
+        return Next(_expr);
     }
-    else if (_value instanceof Cont) {
-        var cont = function (x) { return Next(_value.cont(x)); };
-        return cont(_value.func.raw(cont));
+    else if (_expr instanceof Cont) {
+        var cont = Val(function (x) { return Ret(Lit(_expr.cont(x))).eval(env); });
+        return cont.raw(_expr.func.raw(cont));
     }
-    else if (_value instanceof Next) {
-        return _value;
+    else if (_expr instanceof Next) {
+        return _expr;
     }
-}
+};
 
 function CallCC(func) {
     if (!(this instanceof CallCC)) {
@@ -95,7 +95,7 @@ CallCC.prototype.eval = function (env) {
         return Cont(_func, function (x) { return x; });
     }
     else if (_func instanceof Cont) {
-        return Cont(_func.func, function (x) { return CallCC(Lit(_func.cont(x))).eval(env); })
+        return Cont(_func.func, function (x) { return CallCC(Lit(_func.cont(x))).eval(env); });
     }
     else if (_func instanceof Next) {
         return _func;
@@ -109,7 +109,7 @@ function App(func, arg) {
     this.func = func;
     this.arg  = arg;
 }
-App.prototype.eval = function (env, toplevel) {
+App.prototype.eval = function (env) {
     var _func = this.func.eval(env);
     if (_func instanceof Val) {
         var _arg = this.arg.eval(env);
@@ -125,14 +125,12 @@ App.prototype.eval = function (env, toplevel) {
     }
     else if (_func instanceof Cont) {
         var arg = this.arg;
-        return Cont(_func.func, function (x) {
-            return App(Lit(_func.cont(x)), arg).eval(env);
-        });
+        return Cont(_func.func, function (x) { return App(Lit(_func.cont(x)), arg).eval(env); });
     }
     else if (_func instanceof Next) {
         return _func;
     }
-}
+};
 
 var env = Object.create(null);
 env["x"] = Val(1);
@@ -143,20 +141,35 @@ env["+"] = Val(function (x) {
     });
 });
 
+// (+ x (call/cc (lambda (cont) (set! f cont) 2)))
 debug(
     Ret(
         App(
             App(Var("+"), Var("x")),
             CallCC(Lit(Val(function (cont) {
-                env["f"] = Val(cont);
+                env["f"] = cont;
                 return Val(2);
             })))
         )
     ).eval(env)
-);
+); // -> 3
 
+env["x"] = Val(100);
+
+// (f 3)
 debug(
     Ret(
         App(Var("f"), Lit(Val(3)))
     ).eval(env)
-);
+); // -> 4
+
+// (call/cc (lambda (return) (call/cc (lambda (cont) (return 5)))))
+debug(
+    Ret(
+        CallCC(Lambda("return",
+            CallCC(Lambda("cont",
+                App(Var("return"), Lit(Val(5)))
+            ))
+        ))
+    ).eval(env)
+); // -> 5
