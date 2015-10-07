@@ -75,7 +75,9 @@ Ret.prototype.eval = function (env) {
         return Next(_expr);
     }
     else if (_expr instanceof Cont) {
-        var cont = Val(function (x) { return Ret(Lit(_expr.cont(x))).eval(env); });
+        var cont = Val(function (x) {
+            return Ret(Lit(_expr.cont(x))).eval(env);
+        });
         return cont.raw(_expr.func.raw(cont));
     }
     else if (_expr instanceof Next) {
@@ -98,7 +100,9 @@ App.prototype.eval = function (env) {
             return _func.raw(_arg);
         }
         else if (_arg instanceof Cont) {
-            return Cont(_arg.func, function (x) { return App(Lit(_func), Lit(_arg.cont(x))).eval(env); });
+            return Cont(_arg.func, function (x) {
+                return App(Lit(_func), Lit(_arg.cont(x))).eval(env);
+            });
         }
         else if (_arg instanceof Next) {
             return _arg;
@@ -106,16 +110,99 @@ App.prototype.eval = function (env) {
     }
     else if (_func instanceof Cont) {
         var arg = this.arg;
-        return Cont(_func.func, function (x) { return App(Lit(_func.cont(x)), arg).eval(env); });
+        return Cont(_func.func, function (x) {
+            return App(Lit(_func.cont(x)), arg).eval(env);
+        });
     }
     else if (_func instanceof Next) {
         return _func;
     }
 };
 
+function Let(binds, body) {
+    if (!(this instanceof Let)) {
+        return new Let(binds, body);
+    }
+    this.binds = binds.slice();
+    this.body  = body;
+}
+Let.prototype.eval = function (env) {
+    var local = Object.create(env);
+    var binds = this.binds;
+    var body  = this.body;
+    for (var i = 0; i < binds.length; i++) {
+        var name = binds[i][0];
+        var expr = binds[i][1];
+        var _expr = expr.eval(local);
+        if (_expr instanceof Val) {
+            local[name] = _expr;
+        }
+        else if (_expr instanceof Cont) {
+            return Cont(_expr.func, function (x) {
+                return Let([[name, Lit(_expr.cont(x))]].concat(binds.slice(i + 1)), body).eval(local);
+            });
+        }
+        else if (_expr instanceof Next) {
+            return _expr;
+        }
+    }
+    var _body = body.eval(local);
+    if (_body instanceof Val) {
+        return _body;
+    }
+    else if (_body instanceof Cont) {
+        return Cont(_body.func, function (x) {
+            return Let([], _body.cont(x)).eval(local);
+        });
+    }
+    else if (_body instanceof Next) {
+        return _body;
+    }
+};
+
+function Proc(exprs) {
+    if (!(this instanceof Proc)) {
+        return new Proc(exprs);
+    }
+    this.exprs = exprs.slice();
+}
+Proc.prototype.eval = function (env) {
+    var exprs = this.exprs;
+    for (var i = 0; i < exprs.length - 1; i++) {
+        var _expr = exprs[i].eval(env);
+        if (_expr instanceof Val) {
+            // nothing
+        }
+        else if (_expr instanceof Cont) {
+            return Cont(_expr.func, function (x) {
+                return Proc(exprs.slice(i + 1)).eval(env);
+            });
+        }
+        else if (_expr instanceof Next) {
+            return _expr;
+        }
+    }
+    var _last = exprs[exprs.length - 1].eval(env);
+    if (_last instanceof Val) {
+        return _last;
+    }
+    else if (_last instanceof Cont) {
+        return Cont(_last.func, function (x) {
+            return Proc([Lit(_last.cont(x))]).eval(env);
+        });
+    }
+    else if (_last instanceof Next) {
+        return _last;
+    }
+}
+
 var env = Object.create(null);
 env["call/cc"] = Val(function (func) {
     return Cont(func, function (x) { return x; });
+});
+env["print"] = Val(function (x) {
+    process.stdout.write(String(x.raw));
+    return Val("undefined");
 });
 env["x"] = Val(1);
 env["y"] = Val(2);
@@ -163,6 +250,33 @@ debug(
                     App(Var("ret2"), Lit(Val(6)))
                 ))
             ))
+        )
+    ).eval(env)
+);
+
+debug(
+    Ret(
+        Let([
+                ["yin",
+                    App(
+                        Lambda("foo", Proc([
+                            App(Var("print"), Lit(Val("\n"))),
+                            Var("foo")
+                        ])),
+                        App(Var("call/cc"), Lambda("bar", Var("bar")))
+                    )
+                ],
+                ["yang",
+                    App(
+                        Lambda("foo", Proc([
+                            App(Var("print"), Lit(Val("*"))),
+                            Var("foo")
+                        ])),
+                        App(Var("call/cc"), Lambda("bar", Var("bar")))
+                    )
+                ]
+            ],
+            App(Var("yin"), Var("yang"))
         )
     ).eval(env)
 );
