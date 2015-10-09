@@ -102,12 +102,13 @@ Next.prototype = Object.create(Res.prototype, {
 // continuation
 // func    : Val (Val (Val * -> (Res | TC)) -> (Res | TC))
 // contList: CL
-function Cont(func, contList) {
+function Cont(func, contList, done) {
     if (!(this instanceof Cont)) {
-        return new Cont(func, contList);
+        return new Cont(func, contList, done);
     }
     this.func     = func;
     this.contList = contList;
+    this.done     = done;
 }
 Cont.prototype = Object.create(Res.prototype, {
     "constructor": {
@@ -159,6 +160,16 @@ function runCont(cont) {
     return cf.raw(cont.func.raw(cf));
 }
 
+// run all continuation
+// res: Res
+// -> Res
+function runAllCont(res) {
+    while (res instanceof Cont) {
+        res = runCont(res);
+    }
+    return res;
+}
+
 // tail call
 // func: Val (Val * -> Res | TC)
 // arg : Val<*>
@@ -173,7 +184,7 @@ function TC(func, arg) {
 // calculate tail call
 // res: Res | TC
 // -> Res
-function runTC(res) {
+function calcTC(res) {
     while (res instanceof TC) {
         res = res.func.raw(res.arg);
     }
@@ -205,22 +216,6 @@ Expr.prototype = Object.create(Object.prototype, {
     }
 });
 
-function NE(expr, env, tailCall) {
-    if (!(this instanceof NE)) {
-        return new NE(expr, env, tailCall);
-    }
-    this.expr     = expr;
-    this.env      = env;
-    this.tailCall = tailCall;
-}
-
-function runNE(res) {
-    while (res instanceof NE) {
-        res = res.expr.eval(res.env, res.tailCall);
-    }
-    return res;
-}
-
 // literal
 // val: Res | TC
 function Lit(val) {
@@ -243,7 +238,7 @@ Lit.prototype = Object.create(Expr.prototype, {
                 return this.val;
             }
             else {
-                return runTC(this.val);
+                return calcTC(this.val);
             }
         }
     }
@@ -335,10 +330,14 @@ Ret.prototype = Object.create(Expr.prototype, {
                 case RT.NEXT:
                     return _res;
                 case RT.CONT:
-                    var cont = Cont(_res.func, CL(function (x) {
-                        return Ret(Lit(x)).eval(env, tailCall);
-                    }, _res.contList));
-                    return runCont(cont);
+                    if (_res.done) {
+                        return _res;
+                    }
+                    else {
+                        return Cont(_res.func, CL(function (x) {
+                            return Ret(Lit(x)).eval(env, tailCall);
+                        }, _res.contList), true);
+                    }
             }
         }
     }
@@ -375,23 +374,33 @@ App.prototype = Object.create(Expr.prototype, {
                                 return TC(_func, _arg);
                             }
                             else {
-                                return runTC(_func.raw(_arg));
+                                return calcTC(_func.raw(_arg));
                             }
                         case RT.ERROR:
                         case RT.NEXT:
                             return _arg;
                         case RT.CONT:
-                            return Cont(_arg.func, CL(function (x) {
-                                return App(Lit(_func), Lit(x)).eval(env, tailCall);
-                            }, _arg.contList));
+                            if (_arg.done) {
+                                return _arg;
+                            }
+                            else {
+                                return Cont(_arg.func, CL(function (x) {
+                                    return App(Lit(_func), Lit(x)).eval(env, tailCall);
+                                }, _arg.contList), false);
+                            }
                     }
                 case RT.ERROR:
                 case RT.NEXT:
                     return _func;
                 case RT.CONT:
-                    return Cont(_func.func, CL(function (x) {
-                        return App(Lit(x), arg).eval(env, tailCall);
-                    }, _func.contList));
+                    if (_func.done) {
+                        return _func;
+                    }
+                    else {
+                        return Cont(_func.func, CL(function (x) {
+                            return App(Lit(x), arg).eval(env, tailCall);
+                        }, _func.contList), false);
+                    }
             }
         }
     }
@@ -431,9 +440,14 @@ Let.prototype = Object.create(Expr.prototype, {
                     case RT.NEXT:
                         return _expr;
                     case RT.CONT:
-                        return Cont(_expr.func, CL(function (x) {
-                            return Let([[name, Lit(x)]].concat(binds.slice(i + 1)), body).eval(local, tailCall);
-                        }, _expr.contList));
+                        if (_expr.done) {
+                            return _expr;
+                        }
+                        else {
+                            return Cont(_expr.func, CL(function (x) {
+                                return Let([[name, Lit(x)]].concat(binds.slice(i + 1)), body).eval(local, tailCall);
+                            }, _expr.contList), false);
+                        }
                 }
             }
             var _body = body.eval(local, tailCall);
@@ -447,9 +461,15 @@ Let.prototype = Object.create(Expr.prototype, {
                     case RT.NEXT:
                         return _body;
                     case RT.CONT:
-                        return Cont(_body.func, CL(function (x) {
-                            return Let([], Lit(x)).eval(local, tailCall);
-                        }, _body.contList));
+                        if (_body.done) {
+                            return _body;
+                        }
+                        else {
+                            return Cont(_body.func, CL(function (x) {
+                                return Let([], Lit(x)).eval(local, tailCall);
+                            }, _body.contList), false);
+                        }
+                        
                 }
             }
         }
@@ -484,9 +504,14 @@ Proc.prototype = Object.create(Expr.prototype, {
                     case RT.NEXT:
                         return _expr;
                     case RT.CONT:
-                        return Cont(_expr.func, CL(function (x) {
-                            return Proc(exprs.slice(i + 1)).eval(env, tailCall);
-                        }, _expr.contList));
+                        if (_expr.done) {
+                            return _expr;
+                        }
+                        else {
+                            return Cont(_expr.func, CL(function (x) {
+                                return Proc(exprs.slice(i + 1)).eval(env, tailCall);
+                            }, _expr.contList), false);
+                        }
                 }
             }
             var _last = exprs[exprs.length - 1].eval(env, tailCall);
@@ -500,9 +525,14 @@ Proc.prototype = Object.create(Expr.prototype, {
                     case RT.NEXT:
                         return _last;
                     case RT.CONT:
-                        return Cont(_last.func, CL(function (x) {
-                            return Proc([Lit(x)]).eval(env, tailCall);
-                        }, _last.contList));
+                        if (_last.done) {
+                            return _last;
+                        }
+                        else {
+                            return Cont(_last.func, CL(function (x) {
+                                return Proc([Lit(x)]).eval(env, tailCall);
+                            }, _last.contList), false);
+                        }
                 }
             }
         }
@@ -512,7 +542,7 @@ Proc.prototype = Object.create(Expr.prototype, {
 var env = Object.create(null);
 
 env["call/cc"] = Val(function (f) {
-    return Cont(f, null);
+    return Cont(f, null, false);
 });
 
 env["print"] = Val(function (x) {
@@ -527,7 +557,7 @@ env["+"] = Val(function (x) {
     });
 });
 
-debug(
+debug(runAllCont(
     Ret(
         App(
             App(Var("+"), Var("x")),
@@ -537,17 +567,17 @@ debug(
             })))
         )
     ).eval(env, false)
-);
+));
 
 env["x"] = Val(100);
 
-debug(
+debug(runAllCont(
     Ret(
         App(Var("f"), Lit(Val(3)))
     ).eval(env, false)
-);
+));
 
-debug(
+debug(runAllCont(
     Ret(
         App(Var("call/cc"), Lambda("ret1",
             App(Var("call/cc"), Lambda("ret2",
@@ -555,9 +585,9 @@ debug(
             ))
         ))
     ).eval(env, false)
-);
+));
 
-debug(
+debug(runAllCont(
     Ret(
         App(Var("call/cc"),
             App(Var("call/cc"), Lambda("ret1",
@@ -567,7 +597,7 @@ debug(
             ))
         )
     ).eval(env, false)
-);
+));
 
 env["id"] = Val(function (x) { return x; });
 
@@ -581,7 +611,7 @@ env["l2"] = Ret(Lambda("foo", Proc([
     Var("foo")
 ]))).eval(env, false).val;
 
-debug(
+debug(runAllCont(
     Ret(
         Let([
                 ["yin",
@@ -600,4 +630,4 @@ debug(
             App(Var("yin"), Var("yang"))
         )
     ).eval(env, false)
-);
+));
