@@ -102,6 +102,7 @@ Next.prototype = Object.create(Res.prototype, {
 // continuation
 // func    : Val (Val (Val * -> (Res | TC)) -> (Res | TC))
 // contList: CL
+// done    : boolean
 function Cont(func, contList, done) {
     if (!(this instanceof Cont)) {
         return new Cont(func, contList, done);
@@ -161,8 +162,8 @@ function runCont(cont) {
 }
 
 // run all continuation
-// res: Res
-// -> Res
+// res: Res | TC
+// -> Res | TC
 function runAllCont(res) {
     while (res instanceof Cont) {
         res = runCont(res);
@@ -172,7 +173,7 @@ function runAllCont(res) {
 
 // tail call
 // func: Val (Val * -> Res | TC)
-// arg : Val<*>
+// arg : Val *
 function TC(func, arg) {
     if (!(this instanceof TC)) {
         return new TC(func, arg);
