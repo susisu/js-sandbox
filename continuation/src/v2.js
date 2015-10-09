@@ -25,7 +25,7 @@ Res.prototype = Object.create(Object.prototype, {
         "configurable": true,
         "value": Res
     },
-    "type": {
+    "resType": {
         "configurable": true,
         "get": function () {
             return RT.UNKNOWN;
@@ -47,7 +47,7 @@ Val.prototype = Object.create(Res.prototype, {
         "configurable": true,
         "value": Val
     },
-    "type": {
+    "resType": {
         "configurable": true,
         "get": function () {
             return RT.OK;
@@ -69,7 +69,7 @@ Err.prototype = Object.create(Res.prototype, {
         "configurable": true,
         "value": Err
     },
-    "type": {
+    "resType": {
         "configurable": true,
         "get": function () {
             return RT.ERROR;
@@ -91,7 +91,7 @@ Next.prototype = Object.create(Res.prototype, {
         "configurable": true,
         "value": Next
     },
-    "type": {
+    "resType": {
         "configurable": true,
         "get": function () {
             return RT.NEXT;
@@ -116,7 +116,7 @@ Cont.prototype = Object.create(Res.prototype, {
         "configurable": true,
         "value": Cont
     },
-    "type": {
+    "resType": {
         "configurable": true,
         "get": function () {
             return RT.CONT;
@@ -323,7 +323,7 @@ Ret.prototype = Object.create(Expr.prototype, {
         "configurable": true,
         "value": function (env, tailCall) {
             var _res = this.expr.eval(env, false);
-            switch (_res.type) {
+            switch (_res.resType) {
                 case RT.OK:
                     return Next(_res);
                 case RT.ERROR:
@@ -365,10 +365,10 @@ App.prototype = Object.create(Expr.prototype, {
         "value": function (env, tailCall) {
             var arg = this.arg;
             var _func = this.func.eval(env, false);
-            switch (_func.type) {
+            switch (_func.resType) {
                 case RT.OK:
                     var _arg = this.arg.eval(env, false);
-                    switch (_arg.type) {
+                    switch (_arg.resType) {
                         case RT.OK:
                             if (tailCall) {
                                 return TC(_func, _arg);
@@ -432,7 +432,7 @@ Let.prototype = Object.create(Expr.prototype, {
             for (var i = 0; i < binds.length; i++) {
                 var name  = binds[i][0];
                 var _expr = binds[i][1].eval(local, false);
-                switch (_expr.type) {
+                switch (_expr.resType) {
                     case RT.OK:
                         local[name] = _expr;
                         break;
@@ -455,7 +455,7 @@ Let.prototype = Object.create(Expr.prototype, {
                 return _body;
             }
             else {
-                switch (_body.type) {
+                switch (_body.resType) {
                     case RT.OK:
                     case RT.ERROR:
                     case RT.NEXT:
@@ -497,7 +497,7 @@ Proc.prototype = Object.create(Expr.prototype, {
             var exprs = this.exprs;
             for (var i = 0; i < exprs.length - 1; i++) {
                 var _expr = exprs[i].eval(env, false);
-                switch (_expr.type) {
+                switch (_expr.resType) {
                     case RT.OK:
                         break;
                     case RT.ERROR:
@@ -519,7 +519,7 @@ Proc.prototype = Object.create(Expr.prototype, {
                 return _last;
             }
             else {
-                switch (_last.type) {
+                switch (_last.resType) {
                     case RT.OK:
                     case RT.ERROR:
                     case RT.NEXT:
