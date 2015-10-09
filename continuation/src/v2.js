@@ -540,6 +540,81 @@ Proc.prototype = Object.create(Expr.prototype, {
     }
 });
 
+// if-then-else
+// cond  : Expr
+// conseq: Expr
+// alt   : Expr
+function If(cond, conseq, alt) {
+    if (!(this instanceof If)) {
+        return new If(cond, conseq, alt);
+    }
+    this.cond   = cond;
+    this.conseq = conseq;
+    this.alt    = alt;
+}
+If.prototype = Object.create(Expr.prototype, {
+    "constructor": {
+        "writable"    : true,
+        "configurable": true,
+        "value": If
+    },
+    "eval": {
+        "writable"    : true,
+        "configurable": true,
+        "value": function (env, tailCall) {
+            var conseq = this.conseq,
+                alt    = this.alt;
+            var _cond = this.cond.eval(env, false);
+            switch (_cond.resType) {
+                case RT.OK:
+                    if (_cond.raw) {
+                        var _conseq = conseq.eval(env, tailCall);
+                        if (_conseq instanceof TC) {
+                            return _conseq;
+                        }
+                        else {
+                            switch (_conseq.resType) {
+                                case RT.OK:
+                                case RT.ERROR:
+                                case RT.NEXT:
+                                    return _conseq;
+                                case RT.CONT:
+                                    return Cont(_conseq.func, CL(function (x) {
+                                        return If(Lit(_cond), Lit(x), alt).eval(env, tailCall);
+                                    }, _conseq.contList), false);
+                            }
+                        }
+                    }
+                    else {
+                        var _alt = alt.eval(env, tailCall);
+                        if (_alt instanceof TC) {
+                            return _alt;
+                        }
+                        else {
+                            switch (_alt.resType) {
+                                case RT.OK:
+                                case RT.ERROR:
+                                case RT.NEXT:
+                                    return _alt;
+                                case RT.CONT:
+                                    return Cont(_alt.func, CL(function (x) {
+                                        return If(Lit(_cond), conseq, Lit(x)).eval(env, tailCall);
+                                    }, _alt.contList), false);
+                            }
+                        }
+                    }
+                case RT.ERROR:
+                case RT.NEXT:
+                    return _cond;
+                case RT.CONT:
+                    return Cont(_cond.func, CL(function (x) {
+                        return If(Lit(x), conseq, alt).eval(env, tailCall);
+                    }, _cond.contList), false);
+            }
+        }
+    }
+});
+
 var env = Object.create(null);
 
 env["call/cc"] = Val(function (f) {
@@ -555,6 +630,26 @@ env["y"] = Val(2);
 env["+"] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw + y.raw);
+    });
+});
+env["-"] = Val(function (x) {
+    return Val(function (y) {
+        return Val(x.raw - y.raw);
+    });
+});
+env["*"] = Val(function (x) {
+    return Val(function (y) {
+        return Val(x.raw * y.raw);
+    });
+});
+env["/"] = Val(function (x) {
+    return Val(function (y) {
+        return Val(x.raw / y.raw);
+    });
+});
+env["=="] = Val(function (x) {
+    return Val(function (y) {
+        return Val(x.raw == y.raw);
     });
 });
 
@@ -599,6 +694,25 @@ debug(runAllCont(
         )
     ).eval(env, false)
 ));
+
+env["fact"] = runAllCont(Ret(Lambda("n", Lambda("p",
+        If(App(App(Var("=="), Var("n")), Lit(Val(0))),
+            Var("p"),
+            App(
+                App(
+                    Var("fact"),
+                    App(App(Var("-"), Var("n")), Lit(Val(1)))
+                ),
+                App(App(Var("*"), Var("p")), Var("n")))
+            )
+    ))).eval(env, false)).val;
+
+debug(runAllCont(
+    Ret(
+        App(App(Var("fact"), Lit(Val(10000))), Lit(Val(1)))
+    ).eval(env, false)
+));
+
 
 env["id"] = Val(function (x) { return x; });
 
