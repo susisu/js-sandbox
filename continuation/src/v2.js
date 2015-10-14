@@ -192,13 +192,63 @@ function calcTC(res) {
     return res;
 }
 
+// statement (runnable)
+function Stmt() {
+    if(!(this instanceof Stmt)) {
+        return new Stmt();
+    }
+}
+Stmt.prototype = Object.create(Object.prototype, {
+    "constructor": {
+        "writable"    : true,
+        "configurable": true,
+        "value": Stmt
+    },
+    // run
+    // env: Object
+    // -> Val * | undefined
+    "run": {
+        "writable"    : true,
+        "configurable": true,
+        "value": function (env) {
+            return;
+        }
+    }
+});
+
+// define / set
+// name: string
+// expr: Expr
+function Def(name, expr) {
+    if (!(this instanceof Def)) {
+        return new Def(name, expr);
+    }
+    this.name = name;
+    this.expr = expr;
+}
+Def.prototype = Object.create(Stmt.prototype, {
+    "constructor": {
+        "writable"    : true,
+        "configurable": true,
+        "value": Def
+    },
+    "run": {
+        "writable"    : true,
+        "configurable": true,
+        "value": function (env) {
+            var val = runAllCont(Ret(this.expr).eval(env, false)).val;
+            env[this.name] = val;
+        }
+    }
+});
+
 // expression (evaluable)
 function Expr() {
     if (!(this instanceof Expr)) {
         return new Expr();
     }
 }
-Expr.prototype = Object.create(Object.prototype, {
+Expr.prototype = Object.create(Stmt.prototype, {
     "constructor": {
         "writable"    : true,
         "configurable": true,
@@ -213,6 +263,13 @@ Expr.prototype = Object.create(Object.prototype, {
         "configurable": true,
         "value": function (env, tailCall) {
             return Val(undefined);
+        }
+    },
+    "run": {
+        "writable"    : true,
+        "configurable": true,
+        "value": function (env) {
+            return runAllCont(Ret(this).eval(env, false)).val;
         }
     }
 });
@@ -623,10 +680,9 @@ env["call/cc"] = Val(function (f) {
 
 env["print"] = Val(function (x) {
     process.stdout.write(String(x.raw));
-    return Val("undefined");
+    return Val(undefined);
 });
-env["x"] = Val(1);
-env["y"] = Val(2);
+
 env["+"] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw + y.raw);
@@ -653,49 +709,46 @@ env["=="] = Val(function (x) {
     });
 });
 
-debug(runAllCont(
-    Ret(
-        App(
-            App(Var("+"), Var("x")),
-            App(Var("call/cc"), Lit(Val(function (cont) {
-                env["f"] = cont;
-                return Val(2);
-            })))
-        )
-    ).eval(env, false)
-));
+env["x"] = Val(1);
+env["y"] = Val(2);
+
+debug(
+    App(
+        App(Var("+"), Var("x")),
+        App(Var("call/cc"), Lit(Val(function (cont) {
+            env["f"] = cont;
+            return Val(2);
+        })))
+    ).run(env)
+);
 
 env["x"] = Val(100);
 
-debug(runAllCont(
-    Ret(
-        App(Var("f"), Lit(Val(3)))
-    ).eval(env, false)
-));
+debug(
+    App(Var("f"), Lit(Val(3)))
+    .run(env)
+);
 
-debug(runAllCont(
-    Ret(
+debug(
+    App(Var("call/cc"), Lambda("ret1",
+        App(Var("call/cc"), Lambda("ret2",
+            App(Var("ret1"), Lit(Val(5)))
+        ))
+    )).run(env)
+);
+
+debug(
+    App(Var("call/cc"),
         App(Var("call/cc"), Lambda("ret1",
-            App(Var("call/cc"), Lambda("ret2",
-                App(Var("ret1"), Lit(Val(5)))
+            App(Var("ret1"), Lambda("ret2",
+                App(Var("ret2"), Lit(Val(6)))
             ))
         ))
-    ).eval(env, false)
-));
+    ).run(env)
+);
 
-debug(runAllCont(
-    Ret(
-        App(Var("call/cc"),
-            App(Var("call/cc"), Lambda("ret1",
-                App(Var("ret1"), Lambda("ret2",
-                    App(Var("ret2"), Lit(Val(6)))
-                ))
-            ))
-        )
-    ).eval(env, false)
-));
-
-env["fact"] = runAllCont(Ret(Lambda("n", Lambda("p",
+env["fact"] =
+    Lambda("n", Lambda("p",
         If(App(App(Var("=="), Var("n")), Lit(Val(0))),
             Var("p"),
             App(
@@ -705,44 +758,43 @@ env["fact"] = runAllCont(Ret(Lambda("n", Lambda("p",
                 ),
                 App(App(Var("*"), Var("p")), Var("n")))
             )
-    ))).eval(env, false)).val;
+    )).run(env);
 
-debug(runAllCont(
-    Ret(
-        App(App(Var("fact"), Lit(Val(10000))), Lit(Val(1)))
-    ).eval(env, false)
-));
+debug(
+    App(App(Var("fact"), Lit(Val(10000))), Lit(Val(1)))
+    .run(env)
+);
 
 
 env["id"] = Val(function (x) { return x; });
 
-env["l1"] = Ret(Lambda("foo", Proc([
-    App(Var("print"), Lit(Val("\n"))),
-    Var("foo")
-]))).eval(env, false).val;
+env["l1"] =
+    Lambda("foo", Proc([
+        App(Var("print"), Lit(Val("\n"))),
+        Var("foo")
+    ])).run(env);
 
-env["l2"] = Ret(Lambda("foo", Proc([
-    App(Var("print"), Lit(Val("*"))),
-    Var("foo")
-]))).eval(env, false).val;
+env["l2"] =
+    Lambda("foo", Proc([
+        App(Var("print"), Lit(Val("*"))),
+        Var("foo")
+    ])).run(env);
 
-debug(runAllCont(
-    Ret(
-        Let([
-                ["yin",
-                    App(
-                        Var("l1"),
-                        App(Var("call/cc"), Var("id"))
-                    )
-                ],
-                ["yang",
-                    App(
-                        Var("l2"),
-                        App(Var("call/cc"), Var("id"))
-                    )
-                ]
+debug(
+    Let([
+            ["yin",
+                App(
+                    Var("l1"),
+                    App(Var("call/cc"), Var("id"))
+                )
             ],
-            App(Var("yin"), Var("yang"))
-        )
-    ).eval(env, false)
-));
+            ["yang",
+                App(
+                    Var("l2"),
+                    App(Var("call/cc"), Var("id"))
+                )
+            ]
+        ],
+        App(Var("yin"), Var("yang"))
+    ).run(env)
+);
