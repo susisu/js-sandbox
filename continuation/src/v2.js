@@ -1,9 +1,5 @@
 "use strict";
 
-function debug(x) {
-    console.log(require("util").inspect(x, { "depth": null, "colors": true }));
-}
-
 // result type
 var RT = Object.freeze({
     "UNKNOWN": "unknown",
@@ -672,129 +668,72 @@ If.prototype = Object.create(Expr.prototype, {
     }
 });
 
-var env = Object.create(null);
+var prelude = Object.create(null);
 
-env["call/cc"] = Val(function (f) {
+prelude["call/cc"] = Val(function (f) {
     return Cont(f, null, false);
 });
 
-env["print"] = Val(function (x) {
+prelude["print"] = Val(function (x) {
     process.stdout.write(String(x.raw));
     return Val(undefined);
 });
 
-env["+"] = Val(function (x) {
+prelude["+"] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw + y.raw);
     });
 });
-env["-"] = Val(function (x) {
+prelude["-"] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw - y.raw);
     });
 });
-env["*"] = Val(function (x) {
+prelude["*"] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw * y.raw);
     });
 });
-env["/"] = Val(function (x) {
+prelude["/"] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw / y.raw);
     });
 });
-env["=="] = Val(function (x) {
+prelude["=="] = Val(function (x) {
     return Val(function (y) {
         return Val(x.raw == y.raw);
     });
 });
 
-env["x"] = Val(1);
-env["y"] = Val(2);
+module.exports = Object.freeze({
+    "RT"  : RT,
+    "Res" : Res,
+    
+    "Val" : Val,
+    "Err" : Err,
+    "Next": Next,
 
-debug(
-    App(
-        App(Var("+"), Var("x")),
-        App(Var("call/cc"), Lit(Val(function (cont) {
-            env["f"] = cont;
-            return Val(2);
-        })))
-    ).run(env)
-);
+    "Cont"      : Cont,
+    "CL"        : CL,
+    "createCF"  : createCF,
+    "runCont"   : runCont,
+    "runAllCont": runAllCont,
 
-env["x"] = Val(100);
+    "TC"    : TC,
+    "calcTC": calcTC,
 
-debug(
-    App(Var("f"), Lit(Val(3)))
-    .run(env)
-);
+    "Stmt": Stmt,
+    "Def" : Def,
 
-debug(
-    App(Var("call/cc"), Lambda("ret1",
-        App(Var("call/cc"), Lambda("ret2",
-            App(Var("ret1"), Lit(Val(5)))
-        ))
-    )).run(env)
-);
+    "Expr"  : Expr,
+    "Lit"   : Lit,
+    "Var"   : Var,
+    "Lambda": Lambda,
+    "Ret"   : Ret,
+    "App"   : App,
+    "Let"   : Let,
+    "Proc"  : Proc,
+    "If"    : If,
 
-debug(
-    App(Var("call/cc"),
-        App(Var("call/cc"), Lambda("ret1",
-            App(Var("ret1"), Lambda("ret2",
-                App(Var("ret2"), Lit(Val(6)))
-            ))
-        ))
-    ).run(env)
-);
-
-env["fact"] =
-    Lambda("n", Lambda("p",
-        If(App(App(Var("=="), Var("n")), Lit(Val(0))),
-            Var("p"),
-            App(
-                App(
-                    Var("fact"),
-                    App(App(Var("-"), Var("n")), Lit(Val(1)))
-                ),
-                App(App(Var("*"), Var("p")), Var("n")))
-            )
-    )).run(env);
-
-debug(
-    App(App(Var("fact"), Lit(Val(10000))), Lit(Val(1)))
-    .run(env)
-);
-
-
-env["id"] = Val(function (x) { return x; });
-
-env["l1"] =
-    Lambda("foo", Proc([
-        App(Var("print"), Lit(Val("\n"))),
-        Var("foo")
-    ])).run(env);
-
-env["l2"] =
-    Lambda("foo", Proc([
-        App(Var("print"), Lit(Val("*"))),
-        Var("foo")
-    ])).run(env);
-
-debug(
-    Let([
-            ["yin",
-                App(
-                    Var("l1"),
-                    App(Var("call/cc"), Var("id"))
-                )
-            ],
-            ["yang",
-                App(
-                    Var("l2"),
-                    App(Var("call/cc"), Var("id"))
-                )
-            ]
-        ],
-        App(Var("yin"), Var("yang"))
-    ).run(env)
-);
+    "prelude": prelude
+});
