@@ -154,7 +154,7 @@ function createCF(contList) {
 // -> Res | TC
 function runCont(cont) {
     var cf = createCF(cont.contList);
-    return cf.raw(cont.func.raw(cf));
+    return cf.raw(calcTC(cont.func.raw(cf)));
 }
 
 // run all continuation
@@ -271,7 +271,7 @@ Expr.prototype = Object.create(Stmt.prototype, {
 });
 
 // literal
-// val: Res | TC
+// val: Res
 function Lit(val) {
     if (!(this instanceof Lit)) {
         return new Lit(val);
@@ -288,12 +288,7 @@ Lit.prototype = Object.create(Expr.prototype, {
         "writable"    : true,
         "configurable": true,
         "value": function (env, tailCall) {
-            if (tailCall) {
-                return this.val;
-            }
-            else {
-                return calcTC(this.val);
-            }
+            return this.val;
         }
     }
 });
