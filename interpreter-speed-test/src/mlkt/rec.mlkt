@@ -1,0 +1,6 @@
+loop c n =
+    if c < n then loop (c + 1) n
+    else n
+;;
+
+print (loop 0 1000000):toString;

@@ -1,0 +1,10 @@
+loop n =
+    let c = ref 0
+    in begin
+        while readRef c < n do
+            c := readRef c + 1;
+        n
+    end
+;
+
+print (loop 1000000):toString;
