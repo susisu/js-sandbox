@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "all": "npm run biwas; npm run evaljs; npm run hopper; npm run mlkt",
+    "all": "npm run biwas; npm run evaljs; npm run hopper; npm run jscpp; npm run mlkt",
     "biwas": "npm run biwas_loop; npm run biwas_rec",
     "biwas_loop": "echo \"BiwaScheme (loop): \" && time biwas src/biwas/loop.scm",
     "biwas_rec": "echo \"BiwaScheme (rec): \" && time biwas src/biwas/rec.scm",
@@ -14,6 +14,7 @@
     "hopper": "npm run hopper_loop; npm run hopper_rec",
     "hopper_loop": "echo \"Hopper (loop): \" && time hopper src/hopper/loop.grace",
     "hopper_rec": "echo \"Hopper (rec): \" && time hopper src/hopper/rec.grace",
+    "jscpp": "echo \"JSCPP (loop):\" && time node src/JSCPP/loop.js",
     "mlkt": "npm run mlkt_loop; npm run mlkt_rec",
     "mlkt_loop": "echo \"Milktea (loop): \" && time mlkt src/mlkt/loop.mlkt",
     "mlkt_rec": "echo \"Milktea (rec): \" && time mlkt src/mlkt/rec.mlkt"
@@ -21,6 +22,7 @@
   "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
   "license": "MIT",
   "dependencies": {
+    "JSCPP": "^2.0.3",
     "biwascheme": "^0.6.2",
     "evaljs": "^1.0.1",
     "hopper": "^0.2.0",
