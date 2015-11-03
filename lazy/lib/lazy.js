@@ -45,15 +45,6 @@ function TC(_func, _arg) {
     this._arg  = _arg;
 }
 
-function calcTC(tc) {
-    if (tc instanceof TC) {
-        return tc._func.eval().then(__func => __func(_arg)).then(calcTC);
-    }
-    else {
-        return Promise.resolve(tc);
-    }
-}
-
 function Expr() {
     if (!(this instanceof Expr)) {
         return new Expr();
@@ -69,7 +60,7 @@ Expr.prototype = Object.create(Object.prototype, {
     "generate": {
         "writable"    : true,
         "configurable": true,
-        "value": function (env, tailCall) {
+        "value": function (env) {
             return Lazy(() => Promise.reject(undefined));
         }
     }
@@ -91,7 +82,7 @@ Lit.prototype = Object.create(Expr.prototype, {
     "generate": {
         "writable"    : true,
         "configurable": true,
-        "value": function (env, tailCall) {
+        "value": function (env) {
             return Lazy(() => Promise.resolve(this.val));
         }
     }
@@ -113,7 +104,7 @@ Var.prototype = Object.create(Expr.prototype, {
     "generate": {
         "writable"    : true,
         "configurable": true,
-        "value": function (env, tailCall) {
+        "value": function (env) {
             return Lazy(() => Promise.resolve(env[this.name]));
         }
     }
@@ -136,11 +127,11 @@ Lambda.prototype = Object.create(Expr.prototype, {
     "generate": {
         "writable"    : true,
         "configurable": true,
-        "value": function (env, tailCall) {
+        "value": function (env) {
             return Lazy(() => Promise.resolve(_arg => {
                 var local = Object.create(env);
                 local[this.argName] = _arg;
-                return this.body.generate(local, true);
+                return this.body.generate(local);
             }));
         }
     }
@@ -163,10 +154,10 @@ App.prototype = Object.create(Expr.prototype, {
     "generate": {
         "writable"    : true,
         "configurable": true,
-        "value": function (env, tailCall) {
-            var _func = this.func.generate(env, false);
-            var _arg  = this.arg.generate(env, false);
-            return Lazy(() => tailCall ? TC(_func, _arg) : _func.eval().then(__func => __func(_arg)));
+        "value": function (env) {
+            var _func = this.func.generate(env);
+            var _arg  = this.arg.generate(env);
+            return Lazy(() => _func.eval().then(__func => __func(_arg)));
         }
     }
 });
@@ -174,12 +165,18 @@ App.prototype = Object.create(Expr.prototype, {
 
 var env = Object.create(null);
 env["x"] = Lazy.val(2);
-env["id"] = Lambda("x", Var("x")).generate(env, false);
-env["K"] = Lambda("x", Lambda("y", Var("x"))).generate(env, false);
 env["y"] = Lazy(() => { console.log("y is evaluated!"); return Promise.resolve(3); });
+env["I"] = Lambda("x", Var("x")).generate(env);
+env["K"] = Lambda("x", Lambda("y", Var("x"))).generate(env);
+env["S"] = Lambda("x", Lambda("y", Lambda("z",
+    App(
+        App(Var("x"), Var("z")),
+        App(Var("y"), Var("z"))
+    )
+))).generate(env);
 
 function print(expr) {
-    calcTC(expr.generate(env, false).eval()).then(x => console.log(x));
+    expr.generate(env).eval().then(x => console.log(x), e => console.error("Error: " + String(e)));
 }
 
 print(
