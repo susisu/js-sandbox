@@ -122,4 +122,49 @@ describe("pattern-matching", function () {
             expect(env).to.deep.equal({});
         })();
     });
+
+    it("array pattern", function () {
+        (function () {
+            var env = Object.create(null);
+            var pat = p.Array([
+                p.Unbound(),
+                p.Variable("x"),
+                p.Number(3.14),
+                p.As("y", p.String("foobar"))
+            ]);
+            var val = V(T.ARRAY,[
+                V(T.NUMBER, 2.72),
+                V(T.STRING, "nya"),
+                V(T.NUMBER, 3.14),
+                V(T.STRING, "foobar")
+            ]);
+            var res = match(env, pat, val);
+
+            expect(res).to.be.true;
+            expect(env).to.deep.equal({
+                "x": V(T.STRING, "nya"),
+                "y": V(T.STRING, "foobar")
+            });
+        })();
+
+        (function () {
+            var env = Object.create(null);
+            var pat = p.Array([
+                p.Unbound(),
+                p.Variable("x"),
+                p.Number(3.14),
+                p.As("y", p.String("foobar"))
+            ]);
+            var val = V(T.ARRAY,[
+                V(T.NUMBER, 2.72),
+                V(T.STRING, "nya"),
+                V(T.NUMBER, 3.14),
+                V(T.STRING, "piyo")
+            ]);
+            var res = match(env, pat, val);
+
+            expect(res).to.be.false;
+            expect(env).to.deep.equal({});
+        })();
+    });
 });
