@@ -19,7 +19,7 @@ var values   = require("./values.js"),
     Value    = values.Value;
 
 function match(env, pattern, value) {
-    pattern.match(env, value);
+    return pattern.match(env, value);
 }
 
 function Pattern() {
