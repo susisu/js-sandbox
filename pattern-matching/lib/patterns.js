@@ -192,4 +192,33 @@ PAs.prototype = Object.create(Pattern.prototype, {
     }
 });
 
+function PArray(patterns) {
+    if (!(this instanceof PArray)) {
+        return new PArray(patterns);
+    }
+    Pattern.call(this);
+    this.patterns = patterns.slice();
+}
+
+PArray.prototype = Object.create(Pattern.prototype, {
+    "constructor": {
+        "writable"    : true,
+        "configurable": true,
+        "value": PArray
+    },
+    "match": {
+        "writable"    : true,
+        "configurable": true,
+        "value": function (env, value) {
+            if (value.type === DataType.ARRAY) {
+                return this.patterns.every(function (pattern, index) {
+                    return pattern.match(env, value.data[index]);
+                });
+            }
+            else {
+                return false;
+            }
+        }
+    }
+});
 endModule();
