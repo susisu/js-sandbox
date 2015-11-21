@@ -10,7 +10,8 @@ function endModule() {
         "Number"   : PNumber,
         "String"   : PString,
         "Bool"     : PBool,
-        "As"       : PAs
+        "As"       : PAs,
+        "Array"    : PArray
     });
 }
 
@@ -19,7 +20,17 @@ var values   = require("./values.js"),
     Value    = values.Value;
 
 function match(env, pattern, value) {
-    return pattern.match(env, value);
+    var sandbox = Object.create(null);
+    var res     = pattern.match(sandbox, value);
+    if (res) {
+        for (var name in sandbox) {
+            env[name] = sandbox[name];
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 function Pattern() {
