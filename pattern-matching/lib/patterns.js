@@ -180,7 +180,7 @@ PAs.prototype = Object.create(Pattern.prototype, {
         "writable"    : true,
         "configurable": true,
         "value": function (env, value) {
-            var res = this.pattern.match(value);
+            var res = this.pattern.match(env, value);
             if (res) {
                 env[this.name] = value;
                 return true;
