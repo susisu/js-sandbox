@@ -155,7 +155,7 @@ PBool.prototype = Object.create(Pattern.prototype, {
         "writable"    : true,
         "configurable": true,
         "value": function (env, value) {
-            return value.type === DataType.bool
+            return value.type === DataType.BOOL
                 && value.data === this.b;
         }
     }
