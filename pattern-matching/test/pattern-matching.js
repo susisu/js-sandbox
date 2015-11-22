@@ -167,4 +167,67 @@ describe("pattern-matching", function () {
             expect(env).to.deep.equal({});
         })();
     });
+
+    it("object pattern", function () {
+        (function () {
+            var env = Object.create(null);
+            var pat = p.Object({
+                "x": p.Unbound(),
+                "y": p.Variable("x"),
+                "z": p.Number(3.14),
+                "w": p.As("y", p.String("foobar"))
+            });
+            var val = V(T.OBJECT,{
+                "x": V(T.NUMBER, 2.72),
+                "y": V(T.STRING, "nya"),
+                "z": V(T.NUMBER, 3.14),
+                "w": V(T.STRING, "foobar")
+            });
+            var res = match(env, pat, val);
+
+            expect(res).to.be.true;
+            expect(env).to.deep.equal({
+                "x": V(T.STRING, "nya"),
+                "y": V(T.STRING, "foobar")
+            });
+        })();
+
+        (function () {
+            var env = Object.create(null);
+            var pat = p.Object({
+                "x": p.Unbound(),
+                "y": p.Variable("x")
+            });
+            var val = V(T.OBJECT,{
+                "x": V(T.NUMBER, 2.72),
+                "y": V(T.STRING, "nya"),
+                "z": V(T.NUMBER, 3.14),
+                "w": V(T.STRING, "foobar")
+            });
+            var res = match(env, pat, val);
+
+            expect(res).to.be.true;
+            expect(env).to.deep.equal({
+                "x": V(T.STRING, "nya")
+            });
+        })();
+
+        (function () {
+            var env = Object.create(null);
+            var pat = p.Object({
+                "x": p.Unbound(),
+                "y": p.Variable("x"),
+                "z": p.Number(3.14),
+                "w": p.As("y", p.String("foobar"))
+            });
+            var val = V(T.OBJECT,{
+                "x": V(T.NUMBER, 2.72),
+                "y": V(T.STRING, "nya")
+            });
+            var res = match(env, pat, val);
+
+            expect(res).to.be.false;
+            expect(env).to.deep.equal({});
+        })();
+    });
 });

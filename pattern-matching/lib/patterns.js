@@ -11,7 +11,8 @@ function endModule() {
         "String"   : PString,
         "Bool"     : PBool,
         "As"       : PAs,
-        "Array"    : PArray
+        "Array"    : PArray,
+        "Object"   : PObject
     });
 }
 
@@ -23,6 +24,7 @@ function match(env, pattern, value) {
     var sandbox = Object.create(null);
     var res     = pattern.match(sandbox, value);
     if (res) {
+        // maybe slow
         for (var name in sandbox) {
             env[name] = sandbox[name];
         }
@@ -232,4 +234,41 @@ PArray.prototype = Object.create(Pattern.prototype, {
         }
     }
 });
+
+function PObject(patterns) {
+    if (!(this instanceof PObject)) {
+        return new PObject(patterns);
+    }
+    Pattern.call(this);
+    this.patterns = patterns;
+}
+
+PObject.prototype = Object.create(Pattern.prototype, {
+    "constructor": {
+        "writable"    : true,
+        "configurable": true,
+        "value": PObject
+    },
+    "match": {
+        "writable"    : true,
+        "configurable": true,
+        "value": function (env, value) {
+            if (value.type === DataType.OBJECT) {
+                var patterns = this.patterns;
+                return Object.keys(this.patterns).every(function (key) {
+                    if (value.data[key] === undefined) {
+                        return false;
+                    }
+                    else {
+                        return patterns[key].match(env, value.data[key])
+                    }
+                });
+            }
+            else {
+                return false;
+            }
+        }
+    }
+});
+
 endModule();
