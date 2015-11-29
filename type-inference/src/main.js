@@ -65,6 +65,10 @@ class Type {
     toString() {
         return "?";
     }
+
+    equals(type) {
+        return false;
+    }
 }
 
 class Tyvar extends Type {
@@ -75,6 +79,11 @@ class Tyvar extends Type {
 
     toString() {
         return this.name;
+    }
+
+    equals(type) {
+        return type instanceof Tyvar
+            && this.name === type.name;
     }
 }
 
@@ -87,6 +96,12 @@ class Arrow extends Type {
 
     toString() {
         return "(" + this.dom.toString() + " -> " + this.codom.toString() + ")";
+    }
+
+    equals(type) {
+        return type instanceof Arrow
+            && this.dom.equals(type.dom)
+            && this.codom.equals(type.codom);
     }
 }
 
@@ -103,6 +118,13 @@ class Tycon extends Type {
                 ? " " + this.args.map(type => type.toString()).join(" ")
                 : ""
             );
+    }
+
+    equals(type) {
+        return type instanceof Tycon
+            && this.name === type.name
+            && this.args.length === type.args.length
+            && this.args.every((arg, i) => arg.equals(type.args[i]));
     }
 }
 
@@ -121,7 +143,7 @@ class Subst {
     apply(type) {
         if (type instanceof Tyvar) {
             var t = this.lookup(type);
-            return t === type
+            return t.equals(type)
                 ? type
                 : this.apply(t);
         }
@@ -135,7 +157,7 @@ class Subst {
 
     extend(tyvar, type) {
         return new Subst(
-            t => tyvar === t
+            t => tyvar.equals(t)
                 ? type
                 : this.lookup(t)
         );
@@ -173,7 +195,7 @@ function union(arr1, arr2) {
     loop: for (i = 0; i < len1; i++) {
         t = arr1[i];
         for (j = 0; j < res.length; j++) {
-            if (t === res[j]) {
+            if (t.equals(res[j])) {
                 continue loop;
             }
         }
@@ -182,7 +204,7 @@ function union(arr1, arr2) {
     loop: for (i = 0; i < len2; i++) {
         t = arr2[i];
         for (j = 0; j < res.length; j++) {
-            if (t === res[j]) {
+            if (t.equals(res[j])) {
                 continue loop;
             }
         }
@@ -199,7 +221,7 @@ function diff(arr1, arr2) {
     loop: for (i = 0; i < len1; i++) {
         t = arr1[i];
         for (j = 0; j < len2; j++) {
-            if (t === arr2[j]) {
+            if (t.equals(arr2[j])) {
                 continue loop;
             }
         }
