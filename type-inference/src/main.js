@@ -366,3 +366,36 @@ console.log(
         )
     )
 );
+
+console.log(
+    showType(env,
+        new Lam("x",
+            new Var("x")
+        )
+    )
+);
+
+console.log(
+    showType(env,
+        new Lam("x",
+            new Lam("y",
+                new Var("x")
+            )
+        )
+    )
+);
+
+console.log(
+    showType(env,
+        new Lam("x",
+            new Lam("y",
+                new Lam("z",
+                    new App(
+                        new App(new Var("x"), new Var("z")),
+                        new App(new Var("y"), new Var("z"))
+                    )
+                )
+            )
+        )
+    )
+);
