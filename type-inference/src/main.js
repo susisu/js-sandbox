@@ -95,7 +95,10 @@ class Arrow extends Type {
     }
 
     toString() {
-        return "(" + this.dom.toString() + " -> " + this.codom.toString() + ")";
+        var domStr = this.dom instanceof Arrow
+            ? "(" + this.dom.toString() + ")"
+            : this.dom.toString();
+        return domStr + " -> " + this.codom.toString();
     }
 
     equals(type) {
@@ -115,7 +118,11 @@ class Tycon extends Type {
     toString() {
         return this.name
             + (this.args.length > 0
-                ? " " + this.args.map(type => type.toString()).join(" ")
+                ? " " + this.args.map(type =>
+                        type instanceof Arrow || (type instanceof Tycon && type.args.length > 0)
+                            ? "(" + type.toString() + ")"
+                            : type.toString()
+                    ).join(" ")
                 : ""
             );
     }
@@ -399,3 +406,21 @@ console.log(
         )
     )
 );
+
+console.log(
+    showType(env,
+        new App(
+            new App(
+                new Var("cons"),
+                new App(
+                    new App(
+                        new Var("cons"),
+                        new Var("true")
+                    ),
+                    new Var("nil")
+                )
+            ),
+            new Var("nil")
+        )
+    )
+)
