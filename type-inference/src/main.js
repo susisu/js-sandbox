@@ -3,7 +3,7 @@
     ref: http://www29.atwiki.jp/tmiya/pages/78.html
 */
 
-"use strict";
+"use strict"
 
 class Term {
     toString() {
@@ -134,6 +134,7 @@ class Tycon extends Type {
             && this.args.every((arg, i) => arg.equals(type.args[i]));
     }
 }
+
 
 var n = 0;
 
@@ -269,11 +270,11 @@ function mgu(type1, type2, subst) {
     if (t instanceof Tyvar
         && u instanceof Tyvar
         && t.name === u.name) {
-        return subst.extend(t, type2);
+        return subst;
     }
     else if (t instanceof Tyvar
-        && !typeTyvars(type2).some(tyvar => tyvar.name === t.name)) {
-        return subst.extend(t, type2);
+        && typeTyvars(u).every(tyvar => tyvar.name !== t.name)) {
+        return subst.extend(t, u);
     }
     else if (u instanceof Tyvar) {
         return mgu(type2, type1, subst);
