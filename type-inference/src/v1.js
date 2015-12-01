@@ -346,49 +346,49 @@ function pgen(type) {
     return gen([], type);
 }
 
-var a = newTyvar();
+// var a = newTyvar();
 var env = Object.create(null);
-env["true"] = pgen(booleanType);
-env["false"] = pgen(booleanType);
-env["if"] = pgen(new Arrow(booleanType, new Arrow(a, new Arrow(a, a))));
-env["zero"] = pgen(intType);
-env["succ"] = pgen(new Arrow(intType, intType));
-env["nil"] = pgen(listType(a));
-env["cons"] = pgen(new Arrow(a, new Arrow(listType(a), listType(a))));
-env["isEmpty"] = pgen(new Arrow(listType(a), booleanType));
+// env["true"] = pgen(booleanType);
+// env["false"] = pgen(booleanType);
+// env["if"] = pgen(new Arrow(booleanType, new Arrow(a, new Arrow(a, a))));
+// env["zero"] = pgen(intType);
+// env["succ"] = pgen(new Arrow(intType, intType));
+// env["nil"] = pgen(listType(a));
+// env["cons"] = pgen(new Arrow(a, new Arrow(listType(a), listType(a))));
+// env["isEmpty"] = pgen(new Arrow(listType(a), booleanType));
 
 function showType(env, term) {
     return typeOf(env, term).toString();
 }
 
-console.log(
-    showType(env,
-        new Lam("x",
-            new App(
-                new App(new Var("cons"), new Var("x")),
-                new Var("nil")
-            )
-        )
-    )
-);
+// console.log(
+//     showType(env,
+//         new Lam("x",
+//             new App(
+//                 new App(new Var("cons"), new Var("x")),
+//                 new Var("nil")
+//             )
+//         )
+//     )
+// );
 
-console.log(
-    showType(env,
-        new Lam("x",
-            new Var("x")
-        )
-    )
-);
+// console.log(
+//     showType(env,
+//         new Lam("x",
+//             new Var("x")
+//         )
+//     )
+// );
 
-console.log(
-    showType(env,
-        new Lam("x",
-            new Lam("y",
-                new Var("x")
-            )
-        )
-    )
-);
+// console.log(
+//     showType(env,
+//         new Lam("x",
+//             new Lam("y",
+//                 new Var("x")
+//             )
+//         )
+//     )
+// );
 
 console.log(
     showType(env,
@@ -405,20 +405,20 @@ console.log(
     )
 );
 
-console.log(
-    showType(env,
-        new App(
-            new App(
-                new Var("cons"),
-                new App(
-                    new App(
-                        new Var("cons"),
-                        new Var("true")
-                    ),
-                    new Var("nil")
-                )
-            ),
-            new Var("nil")
-        )
-    )
-)
+// console.log(
+//     showType(env,
+//         new App(
+//             new App(
+//                 new Var("cons"),
+//                 new App(
+//                     new App(
+//                         new Var("cons"),
+//                         new Var("true")
+//                     ),
+//                     new Var("nil")
+//                 )
+//             ),
+//             new Var("nil")
+//         )
+//     )
+// );
