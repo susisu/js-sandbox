@@ -149,8 +149,8 @@ class Subst {
 
     apply(type) {
         if (type instanceof Tyvar) {
-            var t = this.lookup(type);
-            return t.equals(type)
+            var t = this.lookup[type.name];
+            return t === undefined || t.equals(type)
                 ? type
                 : this.apply(t);
         }
@@ -163,16 +163,13 @@ class Subst {
     }
 
     extend(tyvar, type) {
-        return new Subst(
-            t => tyvar.equals(t)
-                ? type
-                : this.lookup(t)
-        );
+        var newLookup = Object.create(this.lookup);
+        newLookup[tyvar.name] = type;
+        return new Subst(newLookup);
     }
 }
 
-var emptySubst = new Subst(t => t);
-
+var emptySubst = new Subst(Object.create(null));
 
 class TypeScheme {
     constructor(tyvars, type) {
