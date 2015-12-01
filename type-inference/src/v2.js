@@ -52,7 +52,7 @@ class Lam extends Term {
         var b = typeInfer.newTyvar();
         var s = subst.mgu(type, new Arrow(a, b));
         var e = env.clone();
-        e.set(this.param, s.apply(a).genTypeScheme(e));
+        e.set(this.param, new TypeScheme([], a));
         return this.body.tp(typeInfer, e, s, b);
     }
 }
@@ -102,7 +102,7 @@ class Let extends Term {
         var a = typeInfer.newTyvar();
         var s = this.term.tp(typeInfer, env, subst, a);
         var e = env.clone();
-        e.set(this.name, s.apply(a).genTypeScheme(e));
+        e.set(this.name, s.apply(a).genTypeScheme(env));
         return this.body.tp(typeInfer, e, s, type);
     }
 }
