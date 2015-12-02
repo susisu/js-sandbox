@@ -225,9 +225,9 @@ function union(types1, types2) {
 function diff(types1, types2) {
     var list = [];
     for (var i = 0; i < types1.length; i++) {
-        if (list.find(type => type.equals(types1[i]) === undefined)
-            && types2.find(type => type.equals(types1[i]) === undefined)) {
-            list.put(types1[i]);
+        if (list.find(type => type.equals(types1[i])) === undefined
+            && types2.find(type => type.equals(types1[i])) === undefined) {
+            list.push(types1[i]);
         }
     }
     return list;
