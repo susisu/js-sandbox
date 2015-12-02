@@ -310,7 +310,7 @@ class TypeScheme {
 
     newInstance(typeInfer) {
         var subst = this.tyvars.reduce(
-            (s, tyvar) => extendSubst(s, tyvar, typeInfer.newTyvar()),
+            (s, tyvar) => s.extend(tyvar, typeInfer.newTyvar()),
             emptySubst
         );
         return subst.apply(this.type);
