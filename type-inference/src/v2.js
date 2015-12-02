@@ -347,10 +347,6 @@ class Env {
     set(name, typeScheme) {
         this.dict[name] = typeScheme;
     }
-
-    get(name) {
-        return this.dict[name];
-    }
 }
 
 var emptyEnv = new Env(Object.create(null));
