@@ -102,7 +102,7 @@ class Let extends Term {
         var a = typeInfer.newTyvar();
         var s = this.term.tp(typeInfer, env, subst, a);
         var e = env.clone();
-        e.set(this.name, s.apply(a).genTypeScheme(env));
+        e.set(this.name, s.apply(a).genTypeScheme(s.applyToEnv(env)));
         return this.body.tp(typeInfer, e, s, type);
     }
 }
@@ -257,6 +257,16 @@ class Subst {
         else {
             throw new Error("unknown type");
         }
+    }
+
+    applyToEnv(env) {
+        var newEnvDict = Object.create(null);
+        for (var name in env.dict) {
+            var typeScheme = env.lookup(name);
+            // assumes tyvars don't occur in this substitution
+            newEnvDict[name] = new TypeScheme(typeScheme.tyvars, this.apply(typeScheme.type));
+        }
+        return new Env(newEnvDict);
     }
 
     extend(tyvar, type) {
