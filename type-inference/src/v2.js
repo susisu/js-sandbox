@@ -177,6 +177,7 @@ class Arrow extends Type {
 // Type constructor
 class Tycon extends Type {
     constructor(name, args) {
+        super();
         this.name = name;
         this.args = args;
     }
