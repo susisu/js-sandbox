@@ -29,7 +29,7 @@ class Var extends Term {
             throw new Error("undefined: " + this.name);
         }
         else {
-            return subst.mgu(type, res.newInstance());
+            return subst.mgu(res.newInstance(typeInfer), type);
         }
     }
 }
