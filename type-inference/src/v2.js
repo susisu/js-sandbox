@@ -190,7 +190,7 @@ class Tycon extends Type {
                         : arg.toString()
                 ).join(" ")
             : "";
-        return this.name + argStr;
+        return this.name + argsStr;
     }
 
     equals(type) {
