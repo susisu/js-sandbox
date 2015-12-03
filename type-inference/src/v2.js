@@ -352,6 +352,13 @@ class TypeScheme {
     getTyvars() {
         return diff(this.type.getTyvars(), this.tyvars);
     }
+
+    toString() {
+        var tyvarsStr = this.tyvars.length > 0
+            ? "forall " + this.tyvars.map(tyvar => tyvar.toString()).join(" ") + ". "
+            : "";
+        return tyvarsStr + this.type.toString();
+    }
 }
 
 
