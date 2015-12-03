@@ -107,6 +107,28 @@ class Let extends Term {
     }
 }
 
+class Letrec extends Term {
+    constructor(name, term, body) {
+        super();
+        this.name = name;
+        this.term = term;
+        this.body = body;
+    }
+
+    toString() {
+        return "letrec " + this.name + " = " + this.term.toString()
+            + " in " + this.body.toString();
+    }
+
+    tp(typeInfer, env, subst, type) {
+        typeInfer.current = this;
+        var a = typeInfer.newTyvar();
+        var e = env.clone();
+        e.set(this.name, new TypeScheme([], a));
+        var s = this.term.tp(typeInfer, e, subst, a);
+        return this.body.tp(typeInfer, e, s, type);
+    }
+}
 
 // Types
 class Type {
