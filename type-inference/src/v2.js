@@ -359,6 +359,18 @@ class TypeScheme {
             : "";
         return tyvarsStr + this.type.toString();
     }
+
+    reduce() {
+        var tyvars = this.tyvars.map((tyvar, i) =>
+                new Tyvar("t" + (i > 0 ? i.toString() : ""))
+            ).reverse();
+        var subst = tyvars.reduce(
+                (s, tyvar, i) => s.extend(this.tyvars[i], tyvar),
+                emptySubst
+            );
+        var type = subst.apply(this.type);
+        return new TypeScheme(tyvars, type);
+    }
 }
 
 
