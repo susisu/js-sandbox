@@ -434,28 +434,61 @@ class TypeInfer {
 
 // Examples
 var typeInfer = new TypeInfer();
-var env = emptyEnv;
 
-console.log(
-    typeInfer.showType(env,
+var boolType = new Tycon("Bool", []);
+var intType = new Tycon("Int", []);
+var listType = a => new Tycon("List", [a]);
+
+var env = emptyEnv.clone();
+var a = new Tyvar("a");
+env.set("true" , boolType.genTypeScheme(env));
+env.set("false", boolType.genTypeScheme(env));
+env.set("if"   , new Arrow(boolType, new Arrow(a, new Arrow(a, a))).genTypeScheme(env));
+env.set("zero" , intType.genTypeScheme(env));
+env.set("succ" , new Arrow(intType, intType).genTypeScheme(env));
+env.set("pred" , new Arrow(intType, intType).genTypeScheme(env));
+env.set("nil"  , listType(a).genTypeScheme(env));
+env.set("cons" , new Arrow(a, new Arrow(listType(a), listType(a))).genTypeScheme(env));
+env.set("empty", new Arrow(listType(a), boolType).genTypeScheme(env));
+env.set("head", new Arrow(listType(a), a).genTypeScheme(env));
+env.set("tail", new Arrow(listType(a), listType(a)).genTypeScheme(env));
+
+var inspect = val =>
+    console.log(require("util").inspect(val, { "depth": null, "colors": true }));
+var showType = name => inspect([name, env.lookup(name).toString()]);
+
+showType("true");
+showType("false");
+showType("if");
+showType("zero");
+showType("succ");
+showType("pred");
+showType("nil");
+showType("cons");
+showType("empty");
+showType("head");
+showType("tail");
+
+env.set("I",
+    typeInfer.typeOf(env,
         new Lam("x",
             new Var("x")
         )
-    )
+    ).genTypeScheme(env).reduce()
 );
 
-console.log(
-    typeInfer.showType(env,
+env.set("K",
+    typeInfer.typeOf(env,
         new Lam("x",
             new Lam("y",
                 new Var("x")
             )
         )
-    )
+    ).genTypeScheme(env).reduce()
 );
 
-console.log(
-    typeInfer.showType(env,
+env.set("S",
+    typeInfer.typeOf(env,
         new Lam("x",
             new Lam("y",
                 new Lam("z",
@@ -466,5 +499,87 @@ console.log(
                 )
             )
         )
-    )
+    ).genTypeScheme(env).reduce()
 );
+
+env.set("head2",
+    typeInfer.typeOf(env,
+        new Lam("xs",
+            new Let("ys",
+                new App(new Var("tail"), new Var("xs")),
+                new App(new Var("head"), new Var("ys"))
+            )
+        )
+    ).genTypeScheme(env).reduce()
+);
+
+env.set("fix",
+    typeInfer.typeOf(env,
+        new Letrec("fix",
+            new Lam("f",
+                new App(
+                    new Var("f"),
+                    new App(
+                        new Var("fix"),
+                        new Var("f")
+                    )
+                )
+            ),
+            new Var("fix")
+        )
+    ).genTypeScheme(env).reduce()
+);
+
+env.set("f",
+    typeInfer.typeOf(env,
+        new Letrec("f",
+            new Lam("x",
+                new App(
+                    new Var("f"),
+                    new Var("x")
+                )
+            ),
+            new Var("f")
+        )
+    ).genTypeScheme(env).reduce()
+);
+
+env.set("length",
+    typeInfer.typeOf(env,
+        new Letrec("length",
+            new Lam("xs",
+                new App(
+                    new App(
+                        new App(
+                            new Var("if"),
+                            new App(
+                                new Var("empty"),
+                                new Var("xs")
+                            )
+                        ),
+                        new Var("zero")
+                    ),
+                    new App(
+                        new Var("succ"),
+                        new App(
+                            new Var("length"),
+                            new App(
+                                new Var("tail"),
+                                new Var("xs")
+                            )
+                        )
+                    )
+                )
+            ),
+            new Var("length")
+        )
+    ).genTypeScheme(env).reduce()
+);
+
+showType("I");
+showType("K");
+showType("S");
+showType("head2");
+showType("fix");
+showType("f");
+showType("length");
