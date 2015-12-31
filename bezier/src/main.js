@@ -12,18 +12,24 @@
 
         var ctx = canvas.getContext("2d");
         ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-        ctx.strokeStyle = "rgba(0, 0, 0, 1.0)";
+        ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
         ctx.lineWidth = 1;
 
-        var curve = [
-            Point(128, 128),
-            Point(384, 128),
-            Point(128, 384),
-            Point(384, 384)
+        var cubic = [
+            rand(),
+            rand(),
+            rand(),
+            rand()
         ];
-        bezier(ctx, curve);
-        curve.forEach(function (point) {
+        bezier(ctx, cubic);
+        cubic.forEach(function (point) {
             drawCircle(ctx, point, 10);
+        });
+
+        ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
+        var quadratic = cubic2Quadratic.apply(undefined, cubic);
+        quadratic.forEach(function (curve) {
+            bezier(ctx, curve);
         });
     }
 
@@ -41,6 +47,10 @@
         }
         this.x = x;
         this.y = y;
+    }
+
+    function rand() {
+        return new Point(Math.random() * WIDTH, Math.random() * HEIGHT);
     }
 
     function bezier(ctx, pts) {
@@ -74,6 +84,39 @@
             }
             return xs;
         }
+    }
+
+    function mid(p1, p2) {
+        return Point(
+            p1.x * 0.5 + p2.x * 0.5,
+            p1.y * 0.5 + p2.y * 0.5
+        );
+    }
+
+    function cubic2Quadratic(p1, p2, p3, p4) {
+        var a1 = mid(p1, p2),
+            a2 = mid(p2, p3),
+            a3 = mid(p3, p4),
+            b1 = mid(a1, a2),
+            b2 = mid(a2, a3),
+            c  = mid(b1, b2),
+            d1 = mid(p1, a1),
+            d2 = mid(p4, a3),
+            e1 = mid(p1, d1),
+            e2 = mid(p4, d2),
+            f1 = mid(b1, c),
+            f2 = mid(b2, c),
+            g1 = mid(f1, b1),
+            g2 = mid(f2, b2),
+            h1 = mid(e1, g1),
+            h2 = mid(e2, g2);
+        return [
+            [p1, e1, h1],
+            [h1, g1, c],
+            [c, g2, h2],
+            [h2, e2, p4]
+        ]
+
     }
 
     window.addEventListener("load", main);
