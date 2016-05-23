@@ -209,7 +209,7 @@ class IxVar extends IxVal {
         return this.index;
     }
 
-    lift(i, n) {
+    shift(i, n) {
         return new IxVar(this.index >= i ? this.index + n : this.index);
     }
 
@@ -233,12 +233,12 @@ class IxAbs extends IxVal {
         return `\u001b[1;33mλ\u001b[22;39m. ${this.body.toString()}`;
     }
 
-    lift(i, n) {
-        return new IxAbs(this.body.lift(i + 1, n));
+    shift(i, n) {
+        return new IxAbs(this.body.shift(i + 1, n));
     }
 
     subst(n, term) {
-        return new IxAbs(this.body.subst(n + 1, term.lift(0, 1)));
+        return new IxAbs(this.body.subst(n + 1, term.shift(0, 1)));
     }
 }
 
@@ -259,8 +259,8 @@ class IxApp extends IxTerm {
         return `${funcStr} ${argStr}`
     }
 
-    lift(i, n) {
-        return new IxApp(this.func.lift(i, n), this.arg.lift(i, n));
+    shift(i, n) {
+        return new IxApp(this.func.shift(i, n), this.arg.shift(i, n));
     }
 
     subst(n, term) {
@@ -275,7 +275,7 @@ class IxApp extends IxTerm {
             return new IxApp(this.func, this.arg.eval1());
         }
         else {
-            return this.func.body.subst(0, this.arg.lift(0, 1)).lift(0, -1);
+            return this.func.body.subst(0, this.arg.shift(0, 1)).shift(0, -1);
         }
     }
 }
@@ -319,7 +319,7 @@ function cpsTransform(term) {
         return new IxAbs(
                 new IxApp(
                     new IxVar(0),
-                    term.lift(0, 1)
+                    term.shift(0, 1)
                 )
             );
     }
@@ -328,7 +328,7 @@ function cpsTransform(term) {
                 new IxApp(
                     new IxVar(0),
                     new IxAbs(
-                        cpsTransform(term.body.lift(1, 1))
+                        cpsTransform(term.body.shift(1, 1))
                     )
                 )
             );
@@ -336,10 +336,10 @@ function cpsTransform(term) {
     else if (term instanceof IxApp) {
         return new IxAbs(
                 new IxApp(
-                    cpsTransform(term.func.lift(0, 1)),
+                    cpsTransform(term.func.shift(0, 1)),
                     new IxAbs(
                         new IxApp(
-                            cpsTransform(term.arg.lift(0, 2)),
+                            cpsTransform(term.arg.shift(0, 2)),
                             new IxAbs(
                                 new IxApp(
                                     new IxApp(
