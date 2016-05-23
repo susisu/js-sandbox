@@ -301,15 +301,17 @@ function deBruijnIndex(term, ctx) {
     }
 }
 
-let IxI = deBruijnIndex(I, []);
-let IxK = deBruijnIndex(K, []);
-let IxS = deBruijnIndex(S, []);
-let IxY = deBruijnIndex(Y, []);
+let ix = deBruijnIndex;
 
-console.log(`I = ${IxI.toString()}`);
-console.log(`K = ${IxK.toString()}`);
-console.log(`S = ${IxS.toString()}`);
-console.log(`Y = ${IxY.toString()}`);
+let ixI = deBruijnIndex(I, []);
+let ixK = deBruijnIndex(K, []);
+let ixS = deBruijnIndex(S, []);
+let ixY = deBruijnIndex(Y, []);
+
+console.log(`I = ${ixI.toString()}`);
+console.log(`K = ${ixK.toString()}`);
+console.log(`S = ${ixS.toString()}`);
+console.log(`Y = ${ixY.toString()}`);
 
 let IxSKIq = deBruijnIndex(SKIq, ["q"]);
 IxSKIq.eval(true);
@@ -358,12 +360,23 @@ function cpsTransform(term) {
     }
 }
 
-let CPSI = cpsTransform(IxI);
-let CPSK = cpsTransform(IxK);
-let CPSS = cpsTransform(IxS);
-let CPSY = cpsTransform(IxY);
-console.log(`I = ${CPSI.toString()}`);
-console.log(`K = ${CPSK.toString()}`);
-console.log(`S = ${CPSS.toString()}`);
-console.log(`Y = ${CPSY.toString()}`);
+let cps = cpsTransform;
 
+function evalCPS(term, log) {
+    term = new IxApp(term, ixI);
+    while (!(term instanceof IxVal)) {
+        term = term.eval(log);
+    }
+}
+
+let cpsI = cpsTransform(ixI);
+let cpsK = cpsTransform(ixK);
+let cpsS = cpsTransform(ixS);
+let cpsY = cpsTransform(ixY);
+console.log(`I' = ${cpsI.toString()}`);
+console.log(`K' = ${cpsK.toString()}`);
+console.log(`S' = ${cpsS.toString()}`);
+console.log(`Y' = ${cpsY.toString()}`);
+
+let cpsSKIq = cpsTransform(IxSKIq);
+evalCPS(cpsSKIq, true);
