@@ -1,15 +1,56 @@
-class Var {
+class Term {
+    constructor() {
+
+    }
+
+    eval(log) {
+        let term = this;
+        if (log) {
+            console.log(term.toString());
+        }
+        while (!(term instanceof Val)) {
+            term = term.eval1();
+            if (log) {
+                console.log(`\t-> ${term.toString()}`);
+            }
+        }
+        return term;
+    }
+}
+
+class Val extends Term {
+    constructor() {
+        super();
+    }
+
+    eval1() {
+        return this;
+    }
+}
+
+class Var extends Val {
     constructor(name) {
+        super();
         this.name = name;
     }
 
     toString() {
         return this.name;
     }
+
+    subst(name, term) {
+        if (this.name === name) {
+            return term;
+        }
+        else {
+            return this;
+        }
+    }
 }
 
-class Abs {
+class Abs extends Val {
     constructor(arg, body) {
+        super();
         this.arg  = arg;
         this.body = body;
     }
@@ -17,10 +58,20 @@ class Abs {
     toString() {
         return `\u001b[1;32mλ\u001b[22;39m${this.arg}. ${this.body.toString()}`;
     }
+
+    subst(name, term) {
+        if (name === this.arg) {
+            return this;
+        }
+        else {
+            return new Abs(this.arg, this.body.subst(name, term));
+        }
+    }
 }
 
-class App {
+class App extends Term {
     constructor(func, arg) {
+        super();
         this.func = func;
         this.arg  = arg;
     }
@@ -33,6 +84,22 @@ class App {
             ? this.arg.toString()
             : `(${this.arg.toString()})`;
         return `${funcStr} ${argStr}`
+    }
+
+    subst(name, term) {
+        return new App(this.func.subst(name, term), this.arg.subst(name, term));
+    }
+
+    eval1() {
+        if (!(this.func instanceof Val)) {
+            return new App(this.func.eval1(), this.arg);
+        }
+        else if (!(this.arg instanceof Val)) {
+            return new App(this.func, this.arg.eval1());
+        }
+        else {
+            return this.func.body.subst(this.func.arg, this.arg);
+        }
     }
 }
 
@@ -99,8 +166,42 @@ console.log(`K = ${K.toString()}`);
 console.log(`S = ${S.toString()}`);
 console.log(`Y = ${Y.toString()}`);
 
-class IxVar {
+let SKIq = parse(`(λx. λy. λz. x z (y z)) (λx. λy. x) (λx. x) q`);
+SKIq.eval(true);
+
+class IxTerm {
+    constructor() {
+
+    }
+
+    eval(log) {
+        let term = this;
+        if (log) {
+            console.log(term.toString());
+        }
+        while (!(term instanceof IxVal)) {
+            term = term.eval1();
+            if (log) {
+                console.log(`\t-> ${term.toString()}`);
+            }
+        }
+        return term;
+    }
+}
+
+class IxVal extends IxTerm {
+    constructor() {
+        super();
+    }
+
+    eval1() {
+        return this;
+    }
+}
+
+class IxVar extends IxVal {
     constructor(index) {
+        super();
         this.index = index;
     }
 
@@ -111,10 +212,20 @@ class IxVar {
     lift(i, n) {
         return new IxVar(this.index >= i ? this.index + n : this.index);
     }
+
+    subst(n, term) {
+        if (this.index === n) {
+            return term;
+        }
+        else {
+            return this;
+        }
+    }
 }
 
-class IxAbs {
+class IxAbs extends IxVal {
     constructor(body) {
+        super();
         this.body = body;
     }
 
@@ -125,10 +236,15 @@ class IxAbs {
     lift(i, n) {
         return new IxAbs(this.body.lift(i + 1, n));
     }
+
+    subst(n, term) {
+        return new IxAbs(this.body.subst(n + 1, term.lift(0, 1)));
+    }
 }
 
-class IxApp {
+class IxApp extends IxTerm {
     constructor(func, arg) {
+        super();
         this.func = func;
         this.arg  = arg;
     }
@@ -145,6 +261,22 @@ class IxApp {
 
     lift(i, n) {
         return new IxApp(this.func.lift(i, n), this.arg.lift(i, n));
+    }
+
+    subst(n, term) {
+        return new IxApp(this.func.subst(n, term), this.arg.subst(n, term));
+    }
+
+    eval1() {
+        if (!(this.func instanceof IxVal)) {
+            return new IxApp(this.func.eval1(), this.arg);
+        }
+        else if (!(this.arg instanceof IxVal)) {
+            return new IxApp(this.func, this.arg.eval1());
+        }
+        else {
+            return this.func.body.subst(0, this.arg.lift(0, 1)).lift(0, -1);
+        }
     }
 }
 
@@ -178,6 +310,9 @@ console.log(`I = ${IxI.toString()}`);
 console.log(`K = ${IxK.toString()}`);
 console.log(`S = ${IxS.toString()}`);
 console.log(`Y = ${IxY.toString()}`);
+
+let IxSKIq = deBruijnIndex(SKIq, ["q"]);
+IxSKIq.eval(true);
 
 function cpsTransform(term) {
     if (term instanceof IxVar) {
