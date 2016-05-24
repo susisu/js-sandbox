@@ -221,6 +221,10 @@ class IxVar extends IxVal {
             return this;
         }
     }
+
+    contains(n) {
+        return this.index === n;
+    }
 }
 
 class IxAbs extends IxVal {
@@ -239,6 +243,10 @@ class IxAbs extends IxVal {
 
     subst(n, term) {
         return new IxAbs(this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    contains(n) {
+        return this.body.contains(n + 1);
     }
 }
 
@@ -277,6 +285,10 @@ class IxApp extends IxTerm {
         else {
             return this.func.body.subst(0, this.arg.shift(0, 1)).shift(0, -1);
         }
+    }
+
+    contains(n) {
+        return this.func.contains(n) || this.arg.contains(n);
     }
 }
 
@@ -378,3 +390,139 @@ console.log(`Y' = ${cpsY.toString()}`);
 
 let cpsSKIq = cpsTransform(IxSKIq);
 evalCPS(cpsSKIq, true);
+
+class IxAbs2 extends IxVal {
+    constructor(body) {
+        super();
+        this.body = body;
+    }
+
+    toString() {
+        return `\u001b[1;36mμ\u001b[22;39m. ${this.body.toString()}`;
+    }
+
+    shift(i, n) {
+        return new IxAbs2(this.body.shift(i + 1, n));
+    }
+
+    subst(n, term) {
+        return new IxAbs2(this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    contains(n) {
+        return this.body.contains(n + 1);
+    }
+}
+
+function cpsTransformMod(term) {
+    if (term instanceof IxVar) {
+        return new IxAbs2(
+                new IxApp(
+                    new IxVar(0),
+                    term.shift(0, 1)
+                )
+            );
+    }
+    else if (term instanceof IxAbs) {
+        return new IxAbs2(
+                new IxApp(
+                    new IxVar(0),
+                    new IxAbs2(
+                        new IxAbs(
+                            new IxApp(
+                                cpsTransformMod(term.body.shift(1, 2)),
+                                new IxVar(1)
+                            )
+                        )
+                    )
+                )
+            );
+    }
+    else if (term instanceof IxApp) {
+        return new IxAbs2(
+                new IxApp(
+                    cpsTransformMod(term.func.shift(0, 1)),
+                    new IxAbs2(
+                        new IxApp(
+                            cpsTransformMod(term.arg.shift(0, 2)),
+                            new IxAbs2(
+                                new IxApp(
+                                    new IxApp(
+                                        new IxVar(1), new IxVar(2)
+                                    ),
+                                    new IxVar(0)
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+let cpsMod = cpsTransformMod;
+
+let cpsModI = cpsTransformMod(ixI);
+let cpsModK = cpsTransformMod(ixK);
+let cpsModS = cpsTransformMod(ixS);
+let cpsModY = cpsTransformMod(ixY);
+console.log(`I'' = ${cpsModI.toString()}`);
+console.log(`K'' = ${cpsModK.toString()}`);
+console.log(`S'' = ${cpsModS.toString()}`);
+console.log(`Y'' = ${cpsModY.toString()}`);
+
+let cpsModSKIq = cpsTransformMod(IxSKIq);
+evalCPS(cpsModSKIq, true);
+
+function normalize2(term) {
+    if (term instanceof IxVar) {
+        return term;
+    }
+    else if (term instanceof IxAbs) {
+        return new IxAbs(normalize2(term.body));
+    }
+    else if (term instanceof IxApp) {
+        let func = normalize2(term.func);
+        let arg  = normalize2(term.arg);
+        if (func instanceof IxAbs2) {
+            return normalize2(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
+        }
+        else {
+            return new IxApp(func, arg);
+        }
+    }
+    else if (term instanceof IxAbs2) {
+        let body = normalize2(term.body);
+        if (term.body instanceof IxApp && term.body.arg instanceof IxVar
+            && term.body.arg.index === 0 && !term.body.func.contains(0)) {
+            return normalize2(term.body.func.shift(1, -1));
+        }
+        else {
+            return new IxAbs2(body);
+        }
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+function cpsTransform2(term) {
+    return normalize2(cpsTransformMod(term));
+}
+
+let cps2 = cpsTransform2;
+
+let cps2I = cpsTransform2(ixI);
+let cps2K = cpsTransform2(ixK);
+let cps2S = cpsTransform2(ixS);
+let cps2Y = cpsTransform2(ixY);
+console.log(`I2 = ${cps2I.toString()}`);
+console.log(`K2 = ${cps2K.toString()}`);
+console.log(`S2 = ${cps2S.toString()}`);
+console.log(`Y2 = ${cps2Y.toString()}`);
+
+let cps2SKIq = cpsTransform2(IxSKIq);
+evalCPS(cps2SKIq, true);
