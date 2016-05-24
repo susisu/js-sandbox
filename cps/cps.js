@@ -364,9 +364,7 @@ let cps = cpsTransform;
 
 function evalCPS(term, log) {
     term = new IxApp(term, ixI);
-    while (!(term instanceof IxVal)) {
-        term = term.eval(log);
-    }
+    return term.eval(log);
 }
 
 let cpsI = cpsTransform(ixI);
