@@ -1,0 +1,17 @@
+{
+  "name": "@susisu/parsing",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pegjs ./peg_src.pegjs ./peg_parser.js"
+  },
+  "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "loquat": "^1.3.2",
+    "pegjs": "^0.9.0"
+  }
+}

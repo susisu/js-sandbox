@@ -1,0 +1,21 @@
+{
+    "strings": ["foobar", ""],
+    "numbers": {
+        "float": 1.38e-23,
+        "integer": -128,
+        "zero": 0,
+        "minus_zero": -0
+    },
+    "booleans": [true, false],
+    "null": null,
+    "objects": [{}, { "key": "value" }],
+    "nested_object": {
+        "obj1": {
+            "obj2": {
+                "message": "hello"
+            }
+        }
+    },
+    "arrays": [[], [4, 1, 2, 6]],
+    "nested_array": [[1, 2, 3], [[4, 5], [6, 7, 8]]]
+}
