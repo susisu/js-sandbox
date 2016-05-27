@@ -7,10 +7,20 @@ window.addEventListener("load", () => {
 
 function main(canvas) {
     let ctx = canvas.getContext("2d");
-    let ps = new Array(10).fill(null).map(_ => p(Math.random() * 640, Math.random() * 480));
-    draw(ctx, "#0000ff", ps);
-    let sps = spline(ps, 20);
+    let ps = [
+        p(  0, 420),
+        p(100, 320),
+        p(113, 240),
+        p(125, 100),
+        p(137, 240),
+        p(150, 320),
+        p(250, 420)
+    ];
+    draw(ctx, "#808080", ps);
+    let sps = spline(ps.map(q => p(q.x + 120, q.y)), 20, 0);
     draw(ctx, "#ff0000", sps);
+    let sps2 = spline(ps.map(q => p(q.x + 240, q.y)), 20, Math.PI / 16);
+    draw(ctx, "#ff0000", sps2);
 }
 
 function draw(ctx, style, points) {
@@ -48,8 +58,26 @@ class Point {
         return new Point(this.x - p.x, this.y - p.y);
     }
 
+    norm() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    normalize() {
+        let n = this.norm();
+        return new Point(this.x / n, this.y / n);
+    }
+
+    // inner product
+    prod(p) {
+        return this.x * p.x + this.y * p.y;
+    }
+
     static distance(p1, p2) {
-        return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x)  + (p1.y - p2.y) * (p1.y - p2.y));
+        return p1.sub(p2).norm();
+    }
+
+    static angle(p1, p2) {
+        return Math.acos(p1.prod(p2) / (p1.norm() * p2.norm()));
     }
 }
 
@@ -58,7 +86,7 @@ function p(x, y) {
 }
 
 // ref: en.wikipedia.org/wiki/Centripetal_Catmull–Rom_spline
-function spline(points, resolution) {
+function spline(points, resolution, acuteCorrThreshold) {
     let len = points.length;
     if (len <= 2) {
         return points;
@@ -69,14 +97,28 @@ function spline(points, resolution) {
     let ps = [];
     let numVs = vs.length;
     for (let i = 0; i <= numVs - 4; i++) {
-        let s = segment(vs[i], vs[i + 1], vs[i + 2], vs[i + 3], resolution);
+        let s = segment(vs[i], vs[i + 1], vs[i + 2], vs[i + 3], resolution, acuteCorrThreshold);
         ps = ps.concat(s);
     }
     ps.push(points[len - 1]);
     return ps;
 }
 
-function segment(v0, v1, v2, v3, resolution) {
+function segment(v0, v1, v2, v3, resolution, acuteCorrThreshold) {
+    let g1 = Point.angle(v0.sub(v1), v2.sub(v1));
+    let g2 = Point.angle(v1.sub(v2), v3.sub(v2));
+    if (0 < g1 && g1 < acuteCorrThreshold) {
+        let t = v2.sub(v1).normalize();
+        let v = v0.sub(v1);
+        let n = v.scale(t.prod(t)).sub(t.scale(t.prod(v))).normalize();
+        v0 = v1.add(t.scale(v.prod(t)).add(n.scale(-v.prod(n))));
+    }
+    if (0 < g2 && g2 < acuteCorrThreshold) {
+        let t = v1.sub(v2).normalize();
+        let v = v3.sub(v2);
+        let n = v.scale(t.prod(t)).sub(t.scale(t.prod(v))).normalize();
+        v3 = v2.add(t.scale(v.prod(t)).add(n.scale(-v.prod(n))));
+    }
     let t0 = 0;
     let t1 = Math.sqrt(Point.distance(v0, v1)) + t0;
     let t2 = Math.sqrt(Point.distance(v1, v2)) + t1;
