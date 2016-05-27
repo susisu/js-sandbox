@@ -107,13 +107,13 @@ function spline(points, resolution, acuteCorrThreshold) {
 function segment(v0, v1, v2, v3, resolution, acuteCorrThreshold) {
     let g1 = Point.angle(v0.sub(v1), v2.sub(v1));
     let g2 = Point.angle(v1.sub(v2), v3.sub(v2));
-    if (0 < g1 && g1 < acuteCorrThreshold) {
+    if (0 < g1 && g1 < Math.PI && g1 < acuteCorrThreshold) {
         let t = v2.sub(v1).normalize();
         let v = v0.sub(v1);
         let n = v.scale(t.prod(t)).sub(t.scale(t.prod(v))).normalize();
         v0 = v1.add(t.scale(v.prod(t)).add(n.scale(-v.prod(n))));
     }
-    if (0 < g2 && g2 < acuteCorrThreshold) {
+    if (0 < g2 && g2 < Math.PI && g2 < acuteCorrThreshold) {
         let t = v1.sub(v2).normalize();
         let v = v3.sub(v2);
         let n = v.scale(t.prod(t)).sub(t.scale(t.prod(v))).normalize();
