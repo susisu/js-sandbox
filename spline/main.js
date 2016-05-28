@@ -7,20 +7,28 @@ window.addEventListener("load", () => {
 
 function main(canvas) {
     let ctx = canvas.getContext("2d");
-    let ps = [
-        p(  0, 420),
-        p(100, 320),
-        p(113, 240),
-        p(125, 100),
-        p(137, 240),
-        p(150, 320),
-        p(250, 420)
-    ];
+    let ps = [];
+    // for (var i = 0; i < 360; i += 0.25) {
+    //     let r = Math.random() * 2;
+    //     let a = Math.random() * 2 * Math.PI;
+    //     ps.push(p(
+    //         160 * Math.cos(i * Math.PI / 180) + 40 * Math.cos(16 * i * Math.PI / 180) + r * Math.cos(a) + 320,
+    //         160 * Math.sin(i * Math.PI / 180) + 40 * Math.sin(16 * i * Math.PI / 180) + r * Math.sin(a) + 320
+    //     ));
+    // }
+    for (var i = -320; i < 320; i++) {
+        let r = Math.random() * 2;
+        let a = Math.random() * 2 * Math.PI;
+        ps.push(p(
+            i + r * Math.cos(a) + 320,
+            Math.pow(Math.abs(i) - 120, 2) / 64 + r * Math.sin(a) + 320
+        ));
+    }
     draw(ctx, "#808080", ps);
-    let sps = spline(ps.map(q => p(q.x + 120, q.y)), 20, 0);
+    let sps = spline(ps.map(q => q.add(p(-100, 0))), 10, Math.PI / 16);
     draw(ctx, "#ff0000", sps);
-    let sps2 = spline(ps.map(q => p(q.x + 240, q.y)), 20, Math.PI / 16);
-    draw(ctx, "#ff0000", sps2);
+    let sps2 = spline(simplify(ps.map(q => q.add(p(100, 0))), 8), 10, Math.PI / 16);
+    draw(ctx, "#0000ff", sps2);
 }
 
 function draw(ctx, style, points) {
@@ -138,4 +146,35 @@ function segment(v0, v1, v2, v3, resolution, acuteCorrThreshold) {
         ps.push(c);
     }
     return ps;
+}
+
+function simplify(points, strength) {
+    let len = points.length;
+    if (len <= 2) {
+        return points;
+    }
+    else {
+        let vs = [];
+        for (let i = 0; i <= len - 2; i++) {
+            vs.push(points[i + 1].sub(points[i]));
+        }
+        let ps = [points[0]];
+        let k = 0;
+        for (let i = 1; i <= len - 2; i++) {
+            let d = points[k].distanceTo(points[i]);
+            if (d > strength) {
+                ps.push(points[i]);
+                k = i;
+            }
+            else {
+                let a = vs[i].sub(vs[k]).norm();
+                if (a > strength) {
+                    ps.push(points[i]);
+                    k = i;
+                }
+            }
+        }
+        ps.push(points[len - 1]);
+        return ps;
+    }
 }
