@@ -67,17 +67,20 @@ class Point {
         return new Point(this.x / n, this.y / n);
     }
 
-    // inner product
-    prod(p) {
+    innerProd(p) {
         return this.x * p.x + this.y * p.y;
     }
 
-    static distance(p1, p2) {
-        return p1.sub(p2).norm();
+    distanceTo(p) {
+        return Math.sqrt((this.x - p.x) * (this.x - p.x) + (this.y - p.y) * (this.y - p.y));
     }
 
-    static angle(p1, p2) {
-        return Math.acos(p1.prod(p2) / (p1.norm() * p2.norm()));
+    angle() {
+        return Math.atan2(this.y, this.x);
+    }
+
+    angleBetween(p) {
+        return Math.acos(this.innerProd(p) / (this.norm() * p.norm()));
     }
 }
 
@@ -105,24 +108,24 @@ function spline(points, resolution, acuteCorrThreshold) {
 }
 
 function segment(v0, v1, v2, v3, resolution, acuteCorrThreshold) {
-    let g1 = Point.angle(v0.sub(v1), v2.sub(v1));
-    let g2 = Point.angle(v1.sub(v2), v3.sub(v2));
+    let g1 = v0.sub(v1).angleBetween(v2.sub(v1));
+    let g2 = v1.sub(v2).angleBetween(v3.sub(v2));
     if (0 < g1 && g1 < Math.PI && g1 < acuteCorrThreshold) {
         let t = v2.sub(v1).normalize();
         let v = v0.sub(v1);
-        let n = v.scale(t.prod(t)).sub(t.scale(t.prod(v))).normalize();
-        v0 = v1.add(t.scale(v.prod(t)).add(n.scale(-v.prod(n))));
+        let n = v.scale(t.innerProd(t)).sub(t.scale(t.innerProd(v))).normalize();
+        v0 = v1.add(t.scale(v.innerProd(t)).add(n.scale(-v.innerProd(n))));
     }
     if (0 < g2 && g2 < Math.PI && g2 < acuteCorrThreshold) {
         let t = v1.sub(v2).normalize();
         let v = v3.sub(v2);
-        let n = v.scale(t.prod(t)).sub(t.scale(t.prod(v))).normalize();
-        v3 = v2.add(t.scale(v.prod(t)).add(n.scale(-v.prod(n))));
+        let n = v.scale(t.innerProd(t)).sub(t.scale(t.innerProd(v))).normalize();
+        v3 = v2.add(t.scale(v.innerProd(t)).add(n.scale(-v.innerProd(n))));
     }
     let t0 = 0;
-    let t1 = Math.sqrt(Point.distance(v0, v1)) + t0;
-    let t2 = Math.sqrt(Point.distance(v1, v2)) + t1;
-    let t3 = Math.sqrt(Point.distance(v2, v3)) + t2;
+    let t1 = Math.sqrt(v0.distanceTo(v1)) + t0;
+    let t2 = Math.sqrt(v1.distanceTo(v2)) + t1;
+    let t3 = Math.sqrt(v2.distanceTo(v3)) + t2;
     let ps = [];
     let dt = (t2 - t1) / resolution;
     for (let i = 0, t = t1; i < resolution; i++, t += dt) {
