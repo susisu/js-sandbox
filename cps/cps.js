@@ -427,7 +427,7 @@ console.log(`Y' = ${cpsY.toString()}`);
 let cpsSKIq = cpsTransform(IxSKIq);
 evalCPS(cpsSKIq, true);
 
-class IxVar2 extends IxVal {
+class IxContVar extends IxVal {
     constructor(index) {
         super();
         this.index = index;
@@ -446,7 +446,7 @@ class IxVar2 extends IxVal {
     }
 
     shift(i, n) {
-        return new IxVar2(this.index >= i ? this.index + n : this.index);
+        return new IxContVar(this.index >= i ? this.index + n : this.index);
     }
 
     subst(n, term) {
@@ -463,7 +463,7 @@ class IxVar2 extends IxVal {
     }
 }
 
-class IxAbs2 extends IxVal {
+class IxCont extends IxVal {
     constructor(body) {
         super();
         this.body = body;
@@ -482,11 +482,42 @@ class IxAbs2 extends IxVal {
     }
 
     shift(i, n) {
-        return new IxAbs2(this.body.shift(i + 1, n));
+        return new IxCont(this.body.shift(i + 1, n));
     }
 
     subst(n, term) {
-        return new IxAbs2(this.body.subst(n + 1, term.shift(0, 1)));
+        return new IxCont(this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    contains(n) {
+        return this.body.contains(n + 1);
+    }
+}
+
+class IxContAbs extends IxVal {
+    constructor(body) {
+        super();
+        this.body = body;
+    }
+
+    toString() {
+        return `\u001b[1;32mδ\u001b[22;39m. ${this.body.toString()}`;
+    }
+
+    toFuncString() {
+        return `(${this.toString()})`;
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
+    }
+
+    shift(i, n) {
+        return new IxContAbs(this.body.shift(i + 1, n));
+    }
+
+    subst(n, term) {
+        return new IxContAbs(this.body.subst(n + 1, term.shift(0, 1)));
     }
 
     contains(n) {
@@ -496,17 +527,17 @@ class IxAbs2 extends IxVal {
 
 function cpsTransformMod(term) {
     if (term instanceof IxVar) {
-        return new IxAbs2(
+        return new IxContAbs(
                 new IxApp(
-                    new IxVar2(0),
+                    new IxContVar(0),
                     term.shift(0, 1)
                 )
             );
     }
     else if (term instanceof IxAbs) {
-        return new IxAbs2(
+        return new IxContAbs(
                 new IxApp(
-                    new IxVar2(0),
+                    new IxContVar(0),
                     new IxAbs(
                         cpsTransformMod(term.body.shift(1, 1))
                     )
@@ -514,18 +545,18 @@ function cpsTransformMod(term) {
             );
     }
     else if (term instanceof IxApp) {
-        return new IxAbs2(
+        return new IxContAbs(
                 new IxApp(
                     cpsTransformMod(term.func.shift(0, 1)),
-                    new IxAbs2(
+                    new IxCont(
                         new IxApp(
                             cpsTransformMod(term.arg.shift(0, 2)),
-                            new IxAbs2(
+                            new IxCont(
                                 new IxApp(
                                     new IxApp(
                                         new IxVar(1), new IxVar(0)
                                     ),
-                                    new IxVar2(2)
+                                    new IxContVar(2)
                                 )
                             )
                         )
@@ -553,7 +584,7 @@ let cpsModSKIq = cpsTransformMod(IxSKIq);
 evalCPS(cpsModSKIq, true);
 
 function normalize2(term) {
-    if (term instanceof IxVar || term instanceof IxVar2) {
+    if (term instanceof IxVar || term instanceof IxContVar) {
         return term;
     }
     else if (term instanceof IxAbs) {
@@ -562,21 +593,31 @@ function normalize2(term) {
     else if (term instanceof IxApp) {
         let func = normalize2(term.func);
         let arg  = normalize2(term.arg);
-        if (func instanceof IxAbs2) {
+        if (func instanceof IxContAbs || func instanceof IxCont) {
             return normalize2(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
         }
         else {
             return new IxApp(func, arg);
         }
     }
-    else if (term instanceof IxAbs2) {
+    else if (term instanceof IxContAbs) {
         let body = normalize2(term.body);
-        if (term.body instanceof IxApp && term.body.arg instanceof IxVar2
+        if (term.body instanceof IxApp && term.body.arg instanceof IxContVar
             && term.body.arg.index === 0 && !term.body.func.contains(0)) {
             return normalize2(term.body.func.shift(1, -1));
         }
         else {
-            return new IxAbs2(body);
+            return new IxContAbs(body);
+        }
+    }
+    else if (term instanceof IxCont) {
+        let body = normalize2(term.body);
+        if (term.body instanceof IxApp && term.body.arg instanceof IxContVar
+            && term.body.arg.index === 0 && !term.body.func.contains(0)) {
+            return normalize2(term.body.func.shift(1, -1));
+        }
+        else {
+            return new IxCont(body);
         }
     }
     else {
