@@ -38,6 +38,14 @@ class Var extends Val {
         return this.name;
     }
 
+    toFuncString() {
+        return this.toString();
+    }
+
+    toArgString() {
+        return this.toString();
+    }
+
     subst(name, term) {
         if (this.name === name) {
             return term;
@@ -59,6 +67,14 @@ class Abs extends Val {
         return `\u001b[1;32mλ\u001b[22;39m${this.arg}. ${this.body.toString()}`;
     }
 
+    toFuncString() {
+        return `(${this.toString()})`;
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
+    }
+
     subst(name, term) {
         if (name === this.arg) {
             return this;
@@ -77,13 +93,15 @@ class App extends Term {
     }
 
     toString() {
-        let funcStr = this.func instanceof Var || this.func instanceof App
-            ? this.func.toString()
-            : `(${this.func.toString()})`;
-        let argStr = this.arg instanceof Var
-            ? this.arg.toString()
-            : `(${this.arg.toString()})`;
-        return `${funcStr} ${argStr}`
+        return `${this.func.toFuncString()} ${this.arg.toArgString()}`;
+    }
+
+    toFuncString() {
+        return this.toString();
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
     }
 
     subst(name, term) {
@@ -206,7 +224,15 @@ class IxVar extends IxVal {
     }
 
     toString() {
-        return this.index;
+        return this.index.toString();
+    }
+
+    toFuncString() {
+        return this.toString();
+    }
+
+    toArgString() {
+        return this.toString();
     }
 
     shift(i, n) {
@@ -237,6 +263,14 @@ class IxAbs extends IxVal {
         return `\u001b[1;33mλ\u001b[22;39m. ${this.body.toString()}`;
     }
 
+    toFuncString() {
+        return `(${this.toString()})`;
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
+    }
+
     shift(i, n) {
         return new IxAbs(this.body.shift(i + 1, n));
     }
@@ -258,13 +292,15 @@ class IxApp extends IxTerm {
     }
 
     toString() {
-        let funcStr = this.func instanceof IxVar || this.func instanceof IxApp || this.func instanceof IxVar2
-            ? this.func.toString()
-            : `(${this.func.toString()})`;
-        let argStr = this.arg instanceof IxVar || this.arg instanceof IxVar2
-            ? this.arg.toString()
-            : `(${this.arg.toString()})`;
-        return `${funcStr} ${argStr}`
+        return `${this.func.toFuncString()} ${this.arg.toArgString()}`;
+    }
+
+    toFuncString() {
+        return this.toString();
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
     }
 
     shift(i, n) {
@@ -289,57 +325,6 @@ class IxApp extends IxTerm {
 
     contains(n) {
         return this.func.contains(n) || this.arg.contains(n);
-    }
-}
-
-class IxVar2 extends IxVal {
-    constructor(index) {
-        super();
-        this.index = index;
-    }
-
-    toString() {
-        return `\u001b[1;35m${this.index.toString()}\u001b[22;39m`;
-    }
-
-    shift(i, n) {
-        return new IxVar2(this.index >= i ? this.index + n : this.index);
-    }
-
-    subst(n, term) {
-        if (this.index === n) {
-            return term;
-        }
-        else {
-            return this;
-        }
-    }
-
-    contains(n) {
-        return this.index === n;
-    }
-}
-
-class IxAbs2 extends IxVal {
-    constructor(body) {
-        super();
-        this.body = body;
-    }
-
-    toString() {
-        return `\u001b[1;36mμ\u001b[22;39m. ${this.body.toString()}`;
-    }
-
-    shift(i, n) {
-        return new IxAbs2(this.body.shift(i + 1, n));
-    }
-
-    subst(n, term) {
-        return new IxAbs2(this.body.subst(n + 1, term.shift(0, 1)));
-    }
-
-    contains(n) {
-        return this.body.contains(n + 1);
     }
 }
 
@@ -441,6 +426,73 @@ console.log(`Y' = ${cpsY.toString()}`);
 
 let cpsSKIq = cpsTransform(IxSKIq);
 evalCPS(cpsSKIq, true);
+
+class IxVar2 extends IxVal {
+    constructor(index) {
+        super();
+        this.index = index;
+    }
+
+    toString() {
+        return `\u001b[1;35m${this.index.toString()}\u001b[22;39m`;
+    }
+
+    toFuncString() {
+        return this.toString();
+    }
+
+    toArgString() {
+        return this.toString();
+    }
+
+    shift(i, n) {
+        return new IxVar2(this.index >= i ? this.index + n : this.index);
+    }
+
+    subst(n, term) {
+        if (this.index === n) {
+            return term;
+        }
+        else {
+            return this;
+        }
+    }
+
+    contains(n) {
+        return this.index === n;
+    }
+}
+
+class IxAbs2 extends IxVal {
+    constructor(body) {
+        super();
+        this.body = body;
+    }
+
+    toString() {
+        return `\u001b[1;36mμ\u001b[22;39m. ${this.body.toString()}`;
+    }
+
+    toFuncString() {
+        return `(${this.toString()})`;
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
+    }
+
+    shift(i, n) {
+        return new IxAbs2(this.body.shift(i + 1, n));
+    }
+
+    subst(n, term) {
+        return new IxAbs2(this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    contains(n) {
+        return this.body.contains(n + 1);
+    }
+}
 
 function cpsTransformMod(term) {
     if (term instanceof IxVar) {
