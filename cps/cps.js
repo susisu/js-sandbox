@@ -258,10 +258,10 @@ class IxApp extends IxTerm {
     }
 
     toString() {
-        let funcStr = this.func instanceof IxVar || this.func instanceof IxApp
+        let funcStr = this.func instanceof IxVar || this.func instanceof IxApp || this.func instanceof IxVar2
             ? this.func.toString()
             : `(${this.func.toString()})`;
-        let argStr = this.arg instanceof IxVar
+        let argStr = this.arg instanceof IxVar || this.arg instanceof IxVar2
             ? this.arg.toString()
             : `(${this.arg.toString()})`;
         return `${funcStr} ${argStr}`
@@ -289,6 +289,57 @@ class IxApp extends IxTerm {
 
     contains(n) {
         return this.func.contains(n) || this.arg.contains(n);
+    }
+}
+
+class IxVar2 extends IxVal {
+    constructor(index) {
+        super();
+        this.index = index;
+    }
+
+    toString() {
+        return `\u001b[1;35m${this.index.toString()}\u001b[22;39m`;
+    }
+
+    shift(i, n) {
+        return new IxVar2(this.index >= i ? this.index + n : this.index);
+    }
+
+    subst(n, term) {
+        if (this.index === n) {
+            return term;
+        }
+        else {
+            return this;
+        }
+    }
+
+    contains(n) {
+        return this.index === n;
+    }
+}
+
+class IxAbs2 extends IxVal {
+    constructor(body) {
+        super();
+        this.body = body;
+    }
+
+    toString() {
+        return `\u001b[1;36mμ\u001b[22;39m. ${this.body.toString()}`;
+    }
+
+    shift(i, n) {
+        return new IxAbs2(this.body.shift(i + 1, n));
+    }
+
+    subst(n, term) {
+        return new IxAbs2(this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    contains(n) {
+        return this.body.contains(n + 1);
     }
 }
 
@@ -391,34 +442,11 @@ console.log(`Y' = ${cpsY.toString()}`);
 let cpsSKIq = cpsTransform(IxSKIq);
 evalCPS(cpsSKIq, true);
 
-class IxAbs2 extends IxVal {
-    constructor(body) {
-        super();
-        this.body = body;
-    }
-
-    toString() {
-        return `\u001b[1;36mμ\u001b[22;39m. ${this.body.toString()}`;
-    }
-
-    shift(i, n) {
-        return new IxAbs2(this.body.shift(i + 1, n));
-    }
-
-    subst(n, term) {
-        return new IxAbs2(this.body.subst(n + 1, term.shift(0, 1)));
-    }
-
-    contains(n) {
-        return this.body.contains(n + 1);
-    }
-}
-
 function cpsTransformMod(term) {
     if (term instanceof IxVar) {
         return new IxAbs2(
                 new IxApp(
-                    new IxVar(0),
+                    new IxVar2(0),
                     term.shift(0, 1)
                 )
             );
@@ -426,7 +454,7 @@ function cpsTransformMod(term) {
     else if (term instanceof IxAbs) {
         return new IxAbs2(
                 new IxApp(
-                    new IxVar(0),
+                    new IxVar2(0),
                     new IxAbs(
                         cpsTransformMod(term.body.shift(1, 1))
                     )
@@ -445,7 +473,7 @@ function cpsTransformMod(term) {
                                     new IxApp(
                                         new IxVar(1), new IxVar(0)
                                     ),
-                                    new IxVar(2)
+                                    new IxVar2(2)
                                 )
                             )
                         )
@@ -473,7 +501,7 @@ let cpsModSKIq = cpsTransformMod(IxSKIq);
 evalCPS(cpsModSKIq, true);
 
 function normalize2(term) {
-    if (term instanceof IxVar) {
+    if (term instanceof IxVar || term instanceof IxVar2) {
         return term;
     }
     else if (term instanceof IxAbs) {
@@ -491,7 +519,7 @@ function normalize2(term) {
     }
     else if (term instanceof IxAbs2) {
         let body = normalize2(term.body);
-        if (term.body instanceof IxApp && term.body.arg instanceof IxVar
+        if (term.body instanceof IxApp && term.body.arg instanceof IxVar2
             && term.body.arg.index === 0 && !term.body.func.contains(0)) {
             return normalize2(term.body.func.shift(1, -1));
         }
