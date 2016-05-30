@@ -427,13 +427,8 @@ function cpsTransformMod(term) {
         return new IxAbs2(
                 new IxApp(
                     new IxVar(0),
-                    new IxAbs2(
-                        new IxAbs(
-                            new IxApp(
-                                cpsTransformMod(term.body.shift(1, 2)),
-                                new IxVar(1)
-                            )
-                        )
+                    new IxAbs(
+                        cpsTransformMod(term.body.shift(1, 1))
                     )
                 )
             );
@@ -448,9 +443,9 @@ function cpsTransformMod(term) {
                             new IxAbs2(
                                 new IxApp(
                                     new IxApp(
-                                        new IxVar(1), new IxVar(2)
+                                        new IxVar(1), new IxVar(0)
                                     ),
-                                    new IxVar(0)
+                                    new IxVar(2)
                                 )
                             )
                         )
