@@ -260,7 +260,7 @@ class IxAbs extends IxVal {
     }
 
     toString() {
-        return `\u001b[1;33mλ\u001b[22;39m. ${this.body.toString()}`;
+        return `\u001b[1;32mλ\u001b[22;39m. ${this.body.toString()}`;
     }
 
     toFuncString() {
@@ -434,7 +434,7 @@ class IxContVar extends IxVal {
     }
 
     toString() {
-        return `\u001b[1;35m${this.index.toString()}\u001b[22;39m`;
+        return `\u001b[1;37m${this.index.toString()}\u001b[22;39m`;
     }
 
     toFuncString() {
@@ -470,7 +470,7 @@ class IxCont extends IxVal {
     }
 
     toString() {
-        return `\u001b[1;36mμ\u001b[22;39m. ${this.body.toString()}`;
+        return `\u001b[1;33mμ\u001b[22;39m. ${this.body.toString()}`;
     }
 
     toFuncString() {
@@ -501,7 +501,7 @@ class IxContAbs extends IxVal {
     }
 
     toString() {
-        return `\u001b[1;32mδ\u001b[22;39m. ${this.body.toString()}`;
+        return `\u001b[1;36mδ\u001b[22;39m. ${this.body.toString()}`;
     }
 
     toFuncString() {
