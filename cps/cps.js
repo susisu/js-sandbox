@@ -642,3 +642,44 @@ console.log(`Y2 = ${cps2Y.toString()}`);
 
 let cps2SKIq = cpsTransform2(IxSKIq);
 evalCPS(cps2SKIq, true);
+
+class IxLet extends IxTerm {
+    constructor(expr, body) {
+        super();
+        this.expr = expr;
+        this.body = body;
+    }
+
+    toString() {
+        return `\u001b[1;35mlet\u001b[22;39m ${this.expr.toString()} \u001b[1;35min\u001b[22;39m ${this.body.toString()}`;
+    }
+
+    toFuncString() {
+        return `(${this.toString()})`;
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
+    }
+
+    shift(i, n) {
+        return new IxLet(this.expr.shift(i, n), this.body.shift(i + 1, n));
+    }
+
+    subst(n, term) {
+        return new IxLet(this.expr.subst(n, term), this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    eval1() {
+        if (!(this.expr instanceof IxVal)) {
+            return new IxLet(this.expr.eval1(), this.body);
+        }
+        else {
+            return this.body.subst(0, this.expr.shift(0, 1)).shift(0, -1);
+        }
+    }
+
+    contains(n) {
+        return this.expr.contains(n) || this.body.contains(n + 1);
+    }
+}
