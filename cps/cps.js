@@ -463,7 +463,7 @@ class IxContVar extends IxVal {
     }
 }
 
-class IxCont extends IxVal {
+class IxContAbs extends IxContVal {
     constructor(body) {
         super();
         this.body = body;
@@ -471,37 +471,6 @@ class IxCont extends IxVal {
 
     toString() {
         return `\u001b[1;33mμ\u001b[22;39m. ${this.body.toString()}`;
-    }
-
-    toFuncString() {
-        return `(${this.toString()})`;
-    }
-
-    toArgString() {
-        return `(${this.toString()})`;
-    }
-
-    shift(i, n) {
-        return new IxCont(this.body.shift(i + 1, n));
-    }
-
-    subst(n, term) {
-        return new IxCont(this.body.subst(n + 1, term.shift(0, 1)));
-    }
-
-    contains(n) {
-        return this.body.contains(n + 1);
-    }
-}
-
-class IxContAbs extends IxVal {
-    constructor(body) {
-        super();
-        this.body = body;
-    }
-
-    toString() {
-        return `\u001b[1;36mδ\u001b[22;39m. ${this.body.toString()}`;
     }
 
     toFuncString() {
@@ -525,9 +494,40 @@ class IxContAbs extends IxVal {
     }
 }
 
+class IxCPSTerm extends IxVal {
+    constructor(body) {
+        super();
+        this.body = body;
+    }
+
+    toString() {
+        return `\u001b[1;36mδ\u001b[22;39m. ${this.body.toString()}`;
+    }
+
+    toFuncString() {
+        return `(${this.toString()})`;
+    }
+
+    toArgString() {
+        return `(${this.toString()})`;
+    }
+
+    shift(i, n) {
+        return new IxCPSTerm(this.body.shift(i + 1, n));
+    }
+
+    subst(n, term) {
+        return new IxCPSTerm(this.body.subst(n + 1, term.shift(0, 1)));
+    }
+
+    contains(n) {
+        return this.body.contains(n + 1);
+    }
+}
+
 function cpsTransformMod(term) {
     if (term instanceof IxVar) {
-        return new IxContAbs(
+        return new IxCPSTerm(
                 new IxApp(
                     new IxContVar(0),
                     term.shift(0, 1)
@@ -535,7 +535,7 @@ function cpsTransformMod(term) {
             );
     }
     else if (term instanceof IxAbs) {
-        return new IxContAbs(
+        return new IxCPSTerm(
                 new IxApp(
                     new IxContVar(0),
                     new IxAbs(
@@ -545,13 +545,13 @@ function cpsTransformMod(term) {
             );
     }
     else if (term instanceof IxApp) {
-        return new IxContAbs(
+        return new IxCPSTerm(
                 new IxApp(
                     cpsTransformMod(term.func.shift(0, 1)),
-                    new IxCont(
+                    new IxContAbs(
                         new IxApp(
                             cpsTransformMod(term.arg.shift(0, 2)),
-                            new IxCont(
+                            new IxContAbs(
                                 new IxApp(
                                     new IxApp(
                                         new IxVar(1), new IxVar(0)
@@ -593,11 +593,21 @@ function normalize2(term) {
     else if (term instanceof IxApp) {
         let func = normalize2(term.func);
         let arg  = normalize2(term.arg);
-        if (func instanceof IxContAbs || func instanceof IxCont) {
+        if (func instanceof IxCPSTerm || func instanceof IxContAbs) {
             return normalize2(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
         }
         else {
             return new IxApp(func, arg);
+        }
+    }
+    else if (term instanceof IxCPSTerm) {
+        let body = normalize2(term.body);
+        if (term.body instanceof IxApp && term.body.arg instanceof IxContVar
+            && term.body.arg.index === 0 && !term.body.func.contains(0)) {
+            return normalize2(term.body.func.shift(1, -1));
+        }
+        else {
+            return new IxCPSTerm(body);
         }
     }
     else if (term instanceof IxContAbs) {
@@ -608,16 +618,6 @@ function normalize2(term) {
         }
         else {
             return new IxContAbs(body);
-        }
-    }
-    else if (term instanceof IxCont) {
-        let body = normalize2(term.body);
-        if (term.body instanceof IxApp && term.body.arg instanceof IxContVar
-            && term.body.arg.index === 0 && !term.body.func.contains(0)) {
-            return normalize2(term.body.func.shift(1, -1));
-        }
-        else {
-            return new IxCont(body);
         }
     }
     else {
