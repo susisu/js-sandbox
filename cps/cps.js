@@ -427,7 +427,13 @@ console.log(`Y' = ${cpsY.toString()}`);
 let cpsSKIq = cpsTransform(IxSKIq);
 evalCPS(cpsSKIq, true);
 
-class IxContVar extends IxVal {
+class IxContVal extends IxVal {
+    constructor() {
+        super();
+    }
+}
+
+class IxContVar extends IxContVal {
     constructor(index) {
         super();
         this.index = index;
