@@ -659,7 +659,7 @@ class IxLet extends IxTerm {
     }
 
     toString() {
-        return `\u001b[1;35mlet\u001b[22;39m ${this.expr.toString()} \u001b[1;35min\u001b[22;39m ${this.body.toString()}`;
+        return `\u001b[1;35mlet\u001b[22;39m (${this.expr.toString()}) \u001b[1;35min\u001b[22;39m ${this.body.toString()}`;
     }
 
     toFuncString() {
