@@ -691,3 +691,129 @@ class IxLet extends IxTerm {
         return this.expr.contains(n) || this.body.contains(n + 1);
     }
 }
+
+class IxRet extends IxContVal {
+    constructor() {
+        super();
+    }
+
+    toString() {
+        return "_";
+    }
+
+    toFuncString() {
+        return this.toString();
+    }
+
+    toArgString() {
+        return this.toString();
+    }
+
+    shift(i, n) {
+        return this;
+    }
+
+    subst(n, term) {
+        return this;
+    }
+
+    contains(n) {
+        return false;
+    }
+}
+
+function unCPSTransform(term) {
+    if (term instanceof IxCPSTerm) {
+        return unCPSReduce(new IxApp(term, new IxRet()));
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+function unCPSReduce(term) {
+    if (term instanceof IxVar) {
+        return term;
+    }
+    else if (term instanceof IxAbs) {
+        if (term.body instanceof IxCPSTerm) {
+            return new IxAbs(unCPSTransform(term.body));
+        }
+        else {
+            return new IxAbs(unCPSReduce(term.body));
+        }
+    }
+    else if (term instanceof IxApp) {
+        let func = unCPSReduce(term.func);
+        let arg  = unCPSReduce(term.arg);
+        if (func instanceof IxRet) {
+            return arg;
+        }
+        else if (func instanceof IxContAbs) {
+            return unCPSReduce(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
+        }
+        else if (func instanceof IxCPSTerm) {
+            return unCPSReduce(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
+        }
+        else if (arg instanceof IxRet) {
+            return func;
+        }
+        else if (arg instanceof IxContAbs) {
+            if (func instanceof IxApp) {
+                if (!(func.func instanceof IxVar)) {
+                    return new IxLet(func.func, unCPSReduce(new IxApp(new IxApp(new IxVar(0), func.arg.shift(0, 1)), arg.shift(0, 1))));
+                }
+                else if (!(func.arg instanceof IxVar)) {
+                    return new IxLet(func.arg, unCPSReduce(new IxApp(new IxApp(func.func.shift(0, 1), new IxVar(0)), arg.shift(0, 1))));
+                }
+                else {
+                    return new IxLet(func, unCPSReduce(arg.body));
+                }
+            }
+            else {
+                return new IxLet(func, unCPSReduce(arg.body));
+            }
+        }
+        else if (func instanceof IxAbs || func instanceof IxApp) {
+            return new IxLet(func, unCPSReduce(new IxApp(new IxVar(0), arg.shift(0, 1))));
+        }
+        else if (arg instanceof IxAbs || arg instanceof IxApp) {
+            return new IxLet(arg, unCPSReduce(new IxApp(func.shift(0, 1), new IxVar(0))));
+        }
+        else {
+            return new IxApp(func, arg);
+        }
+    }
+    else if (term instanceof IxContVar) {
+        return term;
+    }
+    else if (term instanceof IxContAbs) {
+        return new IxContAbs(unCPSReduce(term.body));
+    }
+    else if (term instanceof IxCPSTerm) {
+        return new IxCPSTerm(unCPSReduce(term.body));
+    }
+    else if (term instanceof IxLet) {
+        return new IxLet(unCPSReduce(term.expr), unCPSReduce(term.body));
+    }
+    else if (term instanceof IxRet) {
+        return term;
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+let unCPS = unCPSTransform;
+
+let unCPSI = unCPSTransform(cpsModI);
+let unCPSK = unCPSTransform(cpsModK);
+let unCPSS = unCPSTransform(cpsModS);
+let unCPSY = unCPSTransform(cpsModY);
+console.log(`I_ = ${unCPSI.toString()}`);
+console.log(`K_ = ${unCPSK.toString()}`);
+console.log(`S_ = ${unCPSS.toString()}`);
+console.log(`Y_ = ${unCPSY.toString()}`);
+
+let unCPSSKIq = unCPSTransform(cpsModSKIq);
+unCPSSKIq.eval(true);
