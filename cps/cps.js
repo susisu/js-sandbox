@@ -692,115 +692,68 @@ class IxLet extends IxTerm {
     }
 }
 
-class IxRet extends IxContVal {
-    constructor() {
-        super();
-    }
-
-    toString() {
-        return "_";
-    }
-
-    toFuncString() {
-        return this.toString();
-    }
-
-    toArgString() {
-        return this.toString();
-    }
-
-    shift(i, n) {
-        return this;
-    }
-
-    subst(n, term) {
-        return this;
-    }
-
-    contains(n) {
-        return false;
-    }
-}
-
 function unCPSTransform(term) {
     if (term instanceof IxCPSTerm) {
-        return unCPSReduce(new IxApp(term, new IxRet()));
+        return unCPSExpr(term.body).shift(1, -1);
     }
     else {
         throw new Error("unexpected term");
     }
 }
 
-function unCPSReduce(term) {
-    if (term instanceof IxVar) {
-        return term;
-    }
-    else if (term instanceof IxAbs) {
-        if (term.body instanceof IxCPSTerm) {
-            return new IxAbs(unCPSTransform(term.body));
+function unCPSExpr(term) {
+    if (term instanceof IxApp) {
+        if (term.func instanceof IxContVar && term.func.index === 0 && !term.arg.contains(0)) {
+            if (term.arg instanceof IxVar) {
+                return term.arg;
+            }
+            else if (term.arg instanceof IxAbs) {
+                return new IxAbs(unCPSTransform(term.arg.body));
+            }
+            else {
+                throw new Error("invalid form");
+            }
         }
-        else {
-            return new IxAbs(unCPSReduce(term.body));
-        }
-    }
-    else if (term instanceof IxApp) {
-        let func = unCPSReduce(term.func);
-        let arg  = unCPSReduce(term.arg);
-        if (func instanceof IxRet) {
-            return arg;
-        }
-        else if (func instanceof IxContAbs) {
-            return unCPSReduce(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
-        }
-        else if (func instanceof IxCPSTerm) {
-            return unCPSReduce(func.body.subst(0, arg.shift(0, 1)).shift(0, -1));
-        }
-        else if (arg instanceof IxRet) {
-            return func;
-        }
-        else if (arg instanceof IxContAbs) {
-            if (func instanceof IxApp) {
-                if (!(func.func instanceof IxVar)) {
-                    return new IxLet(func.func, unCPSReduce(new IxApp(new IxApp(new IxVar(0), func.arg.shift(0, 1)), arg.shift(0, 1))));
-                }
-                else if (!(func.arg instanceof IxVar)) {
-                    return new IxLet(func.arg, unCPSReduce(new IxApp(new IxApp(func.func.shift(0, 1), new IxVar(0)), arg.shift(0, 1))));
+        else if (term.func instanceof IxCPSTerm && term.arg instanceof IxContVal) {
+            let func = unCPSTransform(term.func);
+            if (term.arg instanceof IxContVar) {
+                return func;
+            }
+            else if (term.arg instanceof IxContAbs) {
+                if (func instanceof IxVar) {
+                    return unCPSExpr(term.arg.body.subst(0, func.shift(0, 1)).shift(0, -1));
                 }
                 else {
-                    return new IxLet(func, unCPSReduce(arg.body));
+                    return expandLet(func, unCPSExpr(term.arg.body));
                 }
             }
             else {
-                return new IxLet(func, unCPSReduce(arg.body));
+                throw new Error("unexpected term");
             }
         }
-        else if (func instanceof IxAbs || func instanceof IxApp) {
-            return new IxLet(func, unCPSReduce(new IxApp(new IxVar(0), arg.shift(0, 1))));
+        else if (term.func instanceof IxApp && term.func.func instanceof IxVar && term.func.arg instanceof IxVar && term.arg instanceof IxContVal) {
+            if (term.arg instanceof IxContVar) {
+                return term.func;
+            }
+            else if (term.arg instanceof IxContAbs) {
+                return new IxLet(term.func, unCPSExpr(term.arg.body));
+            }
+            else {
+                throw new Error("unexpected term");
+            }
         }
-        else if (arg instanceof IxAbs || arg instanceof IxApp) {
-            return new IxLet(arg, unCPSReduce(new IxApp(func.shift(0, 1), new IxVar(0))));
-        }
-        else {
-            return new IxApp(func, arg);
-        }
-    }
-    else if (term instanceof IxContVar) {
-        return term;
-    }
-    else if (term instanceof IxContAbs) {
-        return new IxContAbs(unCPSReduce(term.body));
-    }
-    else if (term instanceof IxCPSTerm) {
-        return new IxCPSTerm(unCPSReduce(term.body));
-    }
-    else if (term instanceof IxLet) {
-        return new IxLet(unCPSReduce(term.expr), unCPSReduce(term.body));
-    }
-    else if (term instanceof IxRet) {
-        return term;
     }
     else {
-        throw new Error("unexpected term");
+        throw new Error("invalid form");
+    }
+}
+
+function expandLet(term, body) {
+    if (term instanceof IxLet) {
+        return new IxLet(term.expr, expandLet(term.body, body.shift(1, 1)));
+    }
+    else {
+        return new IxLet(term, body);
     }
 }
 
