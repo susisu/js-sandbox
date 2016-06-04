@@ -770,3 +770,140 @@ console.log(`Y = ${unCPSY.toString()}`);
 
 let unCPSSKIq = unCPSTransform(cpsModSKIq);
 unCPSSKIq.eval(true);
+
+class EvalContext {
+    constructor() {
+    }
+
+    compose(ctx) {
+        return new CompositionContext(this, ctx);
+    }
+
+    innermost() {
+        return this;
+    }
+}
+
+class CompositionContext extends EvalContext {
+    constructor(ctx1, ctx2) {
+        super();
+        this.ctx1 = ctx1;
+        this.ctx2 = ctx2;
+    }
+
+    apply(term) {
+        return this.ctx1.apply(this.ctx2.apply(term));
+    }
+
+    innermost() {
+        return this.ctx2.innermost();
+    }
+
+    shift(i, n) {
+        return new CompositionContext(this.ctx1.shift(i, n), this.ctx2.shift(i, n));
+    }
+}
+
+class EmptyContext extends EvalContext {
+    constructor() {
+        super();
+    }
+
+    apply(term) {
+        return term;
+    }
+
+    shift(i, n) {
+        return this;
+    }
+}
+
+class LetContext extends EvalContext {
+    constructor(body) {
+        super();
+        this.body = body;
+    }
+
+    apply(term) {
+        return new IxLet(term, this.body);
+    }
+
+    shift(i, n) {
+        return new LetContext(this.body.shift(i + 1, n));
+    }
+}
+
+class FuncContext extends EvalContext {
+    constructor(arg) {
+        super();
+        this.arg = arg;
+    }
+
+    apply(term) {
+        return new IxApp(term, this.arg);
+    }
+
+    shift(i, n) {
+        return new FuncContext(this.arg.shift(i, n));
+    }
+}
+
+class ArgContext extends EvalContext {
+    constructor(func) {
+        super();
+        this.func = func;
+    }
+
+    apply(term) {
+        return new IxApp(this.func, term);
+    }
+
+    shift(i, n) {
+        return new ArgContext(this.func.shift(i, n));
+    }
+}
+
+function aNormalize(term, context) {
+    // console.log(term.toString());
+    if (term instanceof IxAbs) {
+        return context.apply(new IxAbs(aNormalize(term.body, new EmptyContext())));
+    }
+    else if (term instanceof IxApp) {
+        if (term.func instanceof IxVal && term.arg instanceof IxVal
+            && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetContext)) {
+            return aNormalize(new IxLet(term, context.shift(0, 1).apply(new IxVar(0))), new EmptyContext());
+        }
+        else if (!(term.func instanceof IxVal)) {
+            return aNormalize(context.apply(aNormalize(term.func, new FuncContext(term.arg))), new EmptyContext());
+        }
+        else if (!(term.arg instanceof IxVal)) {
+            return aNormalize(context.apply(aNormalize(term.arg, new ArgContext(term.func))), new EmptyContext());
+        }
+        else {
+            return context.apply(term);
+        }
+    }
+    else if (term instanceof IxLet) {
+        if (!(context instanceof EmptyContext)) {
+            return aNormalize(new IxLet(term.expr, context.shift(0, 1).apply(term.body)), new EmptyContext());
+        }
+        else {
+            return context.apply(aNormalize(term.expr, new LetContext(aNormalize(term.body, new EmptyContext()))));
+        }
+    }
+    else {
+        return context.apply(term);
+    }
+}
+
+let aNormI = aNormalize(ixI, new EmptyContext());
+let aNormK = aNormalize(ixK, new EmptyContext());
+let aNormS = aNormalize(ixS, new EmptyContext());
+let aNormY = aNormalize(ixY, new EmptyContext());
+console.log(`I = ${aNormI.toString()}`);
+console.log(`K = ${aNormK.toString()}`);
+console.log(`S = ${aNormS.toString()}`);
+console.log(`Y = ${aNormY.toString()}`);
+
+let aNormSKIq = aNormalize(IxSKIq, new EmptyContext());
+aNormSKIq.eval(true);
