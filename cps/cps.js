@@ -864,23 +864,30 @@ class ArgContext extends EvalContext {
 }
 
 function aNormalize(term, context) {
-    // console.log(term.toString());
     if (term instanceof IxAbs) {
         return context.apply(new IxAbs(aNormalize(term.body, new EmptyContext())));
     }
     else if (term instanceof IxApp) {
-        if (term.func instanceof IxVal && term.arg instanceof IxVal
+        let func = term.func;
+        let arg  = term.arg;
+        if (func instanceof IxAbs) {
+            func = aNormalize(func, new EmptyContext());
+        }
+        if (arg instanceof IxAbs) {
+            arg = aNormalize(arg, new EmptyContext());
+        }
+        if (func instanceof IxVal && arg instanceof IxVal
             && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetContext)) {
-            return aNormalize(new IxLet(term, context.shift(0, 1).apply(new IxVar(0))), new EmptyContext());
+            return aNormalize(new IxLet(new IxApp(func, arg), context.shift(0, 1).apply(new IxVar(0))), new EmptyContext());
         }
-        else if (!(term.func instanceof IxVal)) {
-            return aNormalize(context.apply(aNormalize(term.func, new FuncContext(term.arg))), new EmptyContext());
+        else if (!(func instanceof IxVal)) {
+            return aNormalize(context.apply(aNormalize(func, new FuncContext(arg))), new EmptyContext());
         }
-        else if (!(term.arg instanceof IxVal)) {
-            return aNormalize(context.apply(aNormalize(term.arg, new ArgContext(term.func))), new EmptyContext());
+        else if (!(arg instanceof IxVal)) {
+            return aNormalize(context.apply(aNormalize(arg, new ArgContext(func))), new EmptyContext());
         }
         else {
-            return context.apply(term);
+            return context.apply(new IxApp(func, arg));
         }
     }
     else if (term instanceof IxLet) {
