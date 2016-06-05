@@ -818,7 +818,7 @@ class EmptyContext extends EvalContext {
     }
 }
 
-class LetContext extends EvalContext {
+class LetExprContext extends EvalContext {
     constructor(body) {
         super();
         this.body = body;
@@ -829,11 +829,11 @@ class LetContext extends EvalContext {
     }
 
     shift(i, n) {
-        return new LetContext(this.body.shift(i + 1, n));
+        return new LetExprContext(this.body.shift(i + 1, n));
     }
 }
 
-class FuncContext extends EvalContext {
+class AppFuncContext extends EvalContext {
     constructor(arg) {
         super();
         this.arg = arg;
@@ -844,11 +844,11 @@ class FuncContext extends EvalContext {
     }
 
     shift(i, n) {
-        return new FuncContext(this.arg.shift(i, n));
+        return new AppFuncContext(this.arg.shift(i, n));
     }
 }
 
-class ArgContext extends EvalContext {
+class AppArgContext extends EvalContext {
     constructor(func) {
         super();
         this.func = func;
@@ -859,7 +859,7 @@ class ArgContext extends EvalContext {
     }
 
     shift(i, n) {
-        return new ArgContext(this.func.shift(i, n));
+        return new AppArgContext(this.func.shift(i, n));
     }
 }
 
@@ -877,14 +877,14 @@ function aNormalize(term, context) {
             arg = aNormalize(arg, new EmptyContext());
         }
         if (func instanceof IxVal && arg instanceof IxVal
-            && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetContext)) {
+            && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetExprContext)) {
             return aNormalize(new IxLet(new IxApp(func, arg), context.shift(0, 1).apply(new IxVar(0))), new EmptyContext());
         }
         else if (!(func instanceof IxVal)) {
-            return aNormalize(context.apply(aNormalize(func, new FuncContext(arg))), new EmptyContext());
+            return aNormalize(context.apply(aNormalize(func, new AppFuncContext(arg))), new EmptyContext());
         }
         else if (!(arg instanceof IxVal)) {
-            return aNormalize(context.apply(aNormalize(arg, new ArgContext(func))), new EmptyContext());
+            return aNormalize(context.apply(aNormalize(arg, new AppArgContext(func))), new EmptyContext());
         }
         else {
             return context.apply(new IxApp(func, arg));
@@ -895,7 +895,7 @@ function aNormalize(term, context) {
             return aNormalize(new IxLet(term.expr, context.shift(0, 1).apply(term.body)), new EmptyContext());
         }
         else {
-            return context.apply(aNormalize(term.expr, new LetContext(aNormalize(term.body, new EmptyContext()))));
+            return context.apply(aNormalize(term.expr, new LetExprContext(aNormalize(term.body, new EmptyContext()))));
         }
     }
     else {
@@ -929,7 +929,7 @@ function aNormalizeMod(term, context) {
             arg = aNormalizeMod(arg, new EmptyContext());
         }
         if (func instanceof IxVar && arg instanceof IxVar
-            && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetContext)) {
+            && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetExprContext)) {
             return new IxLet(new IxApp(func, arg), aNormalizeMod(context.shift(0, 1).apply(new IxVar(0)), new EmptyContext()));
         }
         else if (func instanceof IxAbs) {
@@ -939,10 +939,10 @@ function aNormalizeMod(term, context) {
             return context.apply(new IxLet(arg, aNormalizeMod(new IxApp(func.shift(0, 1), new IxVar(0)), new EmptyContext())));
         }
         else if (!(func instanceof IxVar)) {
-            return aNormalizeMod(context.apply(aNormalizeMod(func, new FuncContext(arg))), new EmptyContext());
+            return aNormalizeMod(context.apply(aNormalizeMod(func, new AppFuncContext(arg))), new EmptyContext());
         }
         else if (!(arg instanceof IxVar)) {
-            return aNormalizeMod(context.apply(aNormalizeMod(arg, new ArgContext(func))), new EmptyContext());
+            return aNormalizeMod(context.apply(aNormalizeMod(arg, new AppArgContext(func))), new EmptyContext());
         }
         else {
             return context.apply(new IxApp(func, arg));
@@ -953,7 +953,7 @@ function aNormalizeMod(term, context) {
             return aNormalizeMod(new IxLet(term.expr, context.shift(0, 1).apply(term.body)), new EmptyContext());
         }
         else {
-            return context.apply(aNormalizeMod(term.expr, new LetContext(aNormalizeMod(term.body, new EmptyContext()))));
+            return context.apply(aNormalizeMod(term.expr, new LetExprContext(aNormalizeMod(term.body, new EmptyContext()))));
         }
     }
     else {
