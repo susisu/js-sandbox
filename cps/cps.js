@@ -914,3 +914,61 @@ console.log(`Y = ${aNormY.toString()}`);
 
 let aNormSKIq = aNormalize(IxSKIq, new EmptyContext());
 aNormSKIq.eval(true);
+
+function aNormalizeMod(term, context) {
+    if (term instanceof IxAbs) {
+        return context.apply(new IxAbs(aNormalizeMod(term.body, new EmptyContext())));
+    }
+    else if (term instanceof IxApp) {
+        let func = term.func;
+        let arg  = term.arg;
+        if (func instanceof IxAbs) {
+            func = aNormalizeMod(func, new EmptyContext());
+        }
+        if (arg instanceof IxAbs) {
+            arg = aNormalizeMod(arg, new EmptyContext());
+        }
+        if (func instanceof IxVar && arg instanceof IxVar
+            && !(context instanceof EmptyContext) && !(context.innermost() instanceof LetContext)) {
+            return new IxLet(new IxApp(func, arg), aNormalizeMod(context.shift(0, 1).apply(new IxVar(0)), new EmptyContext()));
+        }
+        else if (func instanceof IxAbs) {
+            return context.apply(new IxLet(func, aNormalizeMod(new IxApp(new IxVar(0), arg.shift(0, 1)), new EmptyContext())));
+        }
+        else if (arg instanceof IxAbs) {
+            return context.apply(new IxLet(arg, aNormalizeMod(new IxApp(func.shift(0, 1), new IxVar(0)), new EmptyContext())));
+        }
+        else if (!(func instanceof IxVar)) {
+            return aNormalizeMod(context.apply(aNormalizeMod(func, new FuncContext(arg))), new EmptyContext());
+        }
+        else if (!(arg instanceof IxVar)) {
+            return aNormalizeMod(context.apply(aNormalizeMod(arg, new ArgContext(func))), new EmptyContext());
+        }
+        else {
+            return context.apply(new IxApp(func, arg));
+        }
+    }
+    else if (term instanceof IxLet) {
+        if (!(context instanceof EmptyContext)) {
+            return aNormalizeMod(new IxLet(term.expr, context.shift(0, 1).apply(term.body)), new EmptyContext());
+        }
+        else {
+            return context.apply(aNormalizeMod(term.expr, new LetContext(aNormalizeMod(term.body, new EmptyContext()))));
+        }
+    }
+    else {
+        return context.apply(term);
+    }
+}
+
+let aNormModI = aNormalizeMod(ixI, new EmptyContext());
+let aNormModK = aNormalizeMod(ixK, new EmptyContext());
+let aNormModS = aNormalizeMod(ixS, new EmptyContext());
+let aNormModY = aNormalizeMod(ixY, new EmptyContext());
+console.log(`I = ${aNormModI.toString()}`);
+console.log(`K = ${aNormModK.toString()}`);
+console.log(`S = ${aNormModS.toString()}`);
+console.log(`Y = ${aNormModY.toString()}`);
+
+let aNormModSKIq = aNormalizeMod(IxSKIq, new EmptyContext());
+aNormModSKIq.eval(true);
