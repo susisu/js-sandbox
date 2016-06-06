@@ -238,7 +238,12 @@ class IxVar extends IxVal {
     }
 
     shift(i, n) {
-        return new IxVar(this.index >= i ? this.index + n : this.index);
+        if (this.index >= i) {
+            return new IxVar(this.index + n);
+        }
+        else {
+            return this;
+        }
     }
 
     subst(n, term) {
@@ -454,7 +459,12 @@ class IxContVar extends IxContVal {
     }
 
     shift(i, n) {
-        return new IxContVar(this.index >= i ? this.index + n : this.index);
+        if (this.index >= i) {
+            return new IxContVar(this.index + n);
+        }
+        else {
+            return this;
+        }
     }
 
     subst(n, term) {
