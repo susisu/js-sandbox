@@ -1026,3 +1026,65 @@ console.log(`Y = ${aNormModY.toString()}`);
 
 let aNormModSKIq = aNormalizeMod(ixSKIq, new EmptyContext());
 aNormModSKIq.eval(true);
+
+// term must be A-normalized
+function liftLambda(term, toplevel) {
+    if (term instanceof IxVar) {
+        return term;
+    }
+    else if (term instanceof IxAbs) {
+        let body = liftLambda(term.body, false);
+        if (body instanceof IxLet && body.expr instanceof IxAbs) {
+            if (body.expr.contains(0)) {
+                return new IxLet(new IxAbs(body.expr), liftLambda(new IxAbs(new IxLet(new IxApp(new IxVar(1), new IxVar(0)), body.body.shift(2, 1))), false));
+            }
+            else {
+                return new IxLet(body.expr.shift(0, -1), liftLambda(new IxAbs(body.body.swap(0, 1)), false));
+            }
+        }
+        else {
+            return new IxAbs(body);
+        }
+    }
+    else if (term instanceof IxApp) {
+        return term;
+    }
+    else if (term instanceof IxLet) {
+        let expr = liftLambda(term.expr, false);
+        if (expr instanceof IxLet) {
+            return liftLambda(new IxLet(expr.expr, new IxLet(expr.body, term.body.shift(1, 1))), toplevel);
+        }
+        else {
+            let body = liftLambda(term.body, false);
+            if (body instanceof IxLet && !(expr instanceof IxAbs) && body.expr instanceof IxAbs) {
+                if (body.expr.contains(0)) {
+                    return new IxLet(new IxAbs(body.expr), liftLambda(new IxLet(expr.shift(0, 1), new IxLet(new IxApp(new IxVar(1), new IxVar(0)), body.body.shift(2, 1))), false));
+                }
+                else {
+                    return new IxLet(body.expr.shift(0, -1), liftLambda(new IxLet(expr.shift(0, 1), body.body.swap(0, 1)), false));
+                }
+            }
+            else if (!toplevel && body instanceof IxAbs) {
+                return liftLambda(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), new IxVar(1))))), toplevel);
+            }
+            else {
+                return new IxLet(expr, body);
+            }
+        }
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+let liftedI = liftLambda(aNormModI, true);
+let liftedK = liftLambda(aNormModK, true);
+let liftedS = liftLambda(aNormModS, true);
+let liftedY = liftLambda(aNormModY, true);
+console.log(`I = ${liftedI.toString()}`);
+console.log(`K = ${liftedK.toString()}`);
+console.log(`S = ${liftedS.toString()}`);
+console.log(`Y = ${liftedY.toString()}`);
+
+let liftedSKIq = liftLambda(aNormModSKIq, true);
+liftedSKIq.eval(true);
