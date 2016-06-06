@@ -388,8 +388,8 @@ console.log(`K = ${ixK.toString()}`);
 console.log(`S = ${ixS.toString()}`);
 console.log(`Y = ${ixY.toString()}`);
 
-let IxSKIq = deBruijnIndex(SKIq, ["q"]);
-IxSKIq.eval(true);
+let ixSKIq = deBruijnIndex(SKIq, ["q"]);
+ixSKIq.eval(true);
 
 function cpsTransform(term) {
     if (term instanceof IxVar) {
@@ -451,7 +451,7 @@ console.log(`K = ${cpsK.toString()}`);
 console.log(`S = ${cpsS.toString()}`);
 console.log(`Y = ${cpsY.toString()}`);
 
-let cpsSKIq = cpsTransform(IxSKIq);
+let cpsSKIq = cpsTransform(ixSKIq);
 evalCPS(cpsSKIq, true);
 
 class IxContVal extends IxVal {
@@ -638,7 +638,7 @@ console.log(`K = ${cpsModK.toString()}`);
 console.log(`S = ${cpsModS.toString()}`);
 console.log(`Y = ${cpsModY.toString()}`);
 
-let cpsModSKIq = cpsTransformMod(IxSKIq);
+let cpsModSKIq = cpsTransformMod(ixSKIq);
 evalCPS(cpsModSKIq, true);
 
 function normalize2(term) {
@@ -698,7 +698,7 @@ console.log(`K = ${cps2K.toString()}`);
 console.log(`S = ${cps2S.toString()}`);
 console.log(`Y = ${cps2Y.toString()}`);
 
-let cps2SKIq = cpsTransform2(IxSKIq);
+let cps2SKIq = cpsTransform2(ixSKIq);
 evalCPS(cps2SKIq, true);
 
 class IxLet extends IxTerm {
@@ -966,7 +966,7 @@ console.log(`K = ${aNormK.toString()}`);
 console.log(`S = ${aNormS.toString()}`);
 console.log(`Y = ${aNormY.toString()}`);
 
-let aNormSKIq = aNormalize(IxSKIq, new EmptyContext());
+let aNormSKIq = aNormalize(ixSKIq, new EmptyContext());
 aNormSKIq.eval(true);
 
 function aNormalizeMod(term, context) {
@@ -1024,5 +1024,5 @@ console.log(`K = ${aNormModK.toString()}`);
 console.log(`S = ${aNormModS.toString()}`);
 console.log(`Y = ${aNormModY.toString()}`);
 
-let aNormModSKIq = aNormalizeMod(IxSKIq, new EmptyContext());
+let aNormModSKIq = aNormalizeMod(ixSKIq, new EmptyContext());
 aNormModSKIq.eval(true);
