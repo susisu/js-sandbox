@@ -258,6 +258,18 @@ class IxVar extends IxVal {
     contains(n) {
         return this.index === n;
     }
+
+    swap(n, m) {
+        if (this.index === n) {
+            return new IxVar(m);
+        }
+        else if (this.index === m) {
+            return new IxVar(n);
+        }
+        else {
+            return this;
+        }
+    }
 }
 
 class IxAbs extends IxVal {
@@ -288,6 +300,10 @@ class IxAbs extends IxVal {
 
     contains(n) {
         return this.body.contains(n + 1);
+    }
+
+    swap(n, m) {
+        return new IxAbs(this.body.swap(n + 1, m + 1));
     }
 }
 
@@ -332,6 +348,10 @@ class IxApp extends IxTerm {
 
     contains(n) {
         return this.func.contains(n) || this.arg.contains(n);
+    }
+
+    swap(n, m) {
+        return new IxApp(this.func.swap(n, m), this.arg.swap(n, m));
     }
 }
 
@@ -479,6 +499,18 @@ class IxContVar extends IxContVal {
     contains(n) {
         return this.index === n;
     }
+
+    swap(n, m) {
+        if (this.index === n) {
+            return new IxContVar(m);
+        }
+        else if (this.index === m) {
+            return new IxContVar(n);
+        }
+        else {
+            return this;
+        }
+    }
 }
 
 class IxContAbs extends IxContVal {
@@ -510,6 +542,10 @@ class IxContAbs extends IxContVal {
     contains(n) {
         return this.body.contains(n + 1);
     }
+
+    swap(n, m) {
+        return new IxContAbs(this.body.swap(n + 1, m + 1));
+    }
 }
 
 class IxCPSTerm extends IxVal {
@@ -540,6 +576,10 @@ class IxCPSTerm extends IxVal {
 
     contains(n) {
         return this.body.contains(n + 1);
+    }
+
+    swap(n, m) {
+        return new IxCPSTerm(this.body.swap(n + 1, m + 1));
     }
 }
 
@@ -699,6 +739,10 @@ class IxLet extends IxTerm {
 
     contains(n) {
         return this.expr.contains(n) || this.body.contains(n + 1);
+    }
+
+    swap(n, m) {
+        return new IxLet(this.expr.swap(n, m), this.body.swap(n + 1, m + 1));
     }
 }
 
