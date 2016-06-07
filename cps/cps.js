@@ -1147,46 +1147,33 @@ liftedSKIq.eval(true);
 
 function grassNormalize(term) {
     if (term instanceof IxVar) {
-        return term;
-    }
-    else if (term instanceof IxAbs) {
-        let body = grassNormalize(term.body);
-        if (body instanceof IxVar && body.index !== 0) {
-            return new IxAbs(new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1))));
+        if (term.index === 0) {
+            return term;
         }
         else {
-            return new IxAbs(body);
+            return new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), term.shift(0, 1)));
         }
+    }
+    else if (term instanceof IxAbs) {
+        return new IxAbs(grassNormalize(term.body));
     }
     else if (term instanceof IxApp) {
         if (term.func instanceof IxAbs) {
-            return grassNormalize(new IxLet(term.func, new IxApp(new IxVar(0), term.arg.shift(0, 1))));
+            return new IxLet(grassNormalize(term.func), grassNormalize(new IxApp(new IxVar(0), term.arg.shift(0, 1))));
         }
         else if (term.arg instanceof IxAbs) {
-            return grassNormalize(new IxLet(term.arg, new IxApp(term.func.shift(0, 1), new IxVar(0))));
+            return new IxLet(grassNormalize(term.arg), grassNormalize(new IxApp(term.func.shift(0, 1), new IxVar(0))));
         }
         else {
             return term;
         }
     }
     else if (term instanceof IxLet) {
-        let expr = grassNormalize(term.expr);
-        if (expr instanceof IxVar) {
-            return grassNormalize(term.body.subst(0, expr.shift(0, 1)).shift(0, -1));
+        if (term.expr instanceof IxVar) {
+            return grassNormalize(term.body.subst(0, term.expr.shift(0, 1)).shift(0, -1));
         }
         else {
-            let body = grassNormalize(term.body);
-            if (body instanceof IxVar) {
-                if (body.index === 0) {
-                    return expr;
-                }
-                else {
-                    return grassNormalize(new IxLet(expr, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1)))));
-                }
-            }
-            else {
-                return new IxLet(expr, body);
-            }
+            return new IxLet(grassNormalize(term.expr), grassNormalize(term.body));
         }
     }
     else {
