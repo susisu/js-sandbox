@@ -1088,3 +1088,73 @@ console.log(`Y = ${liftedY.toString()}`);
 
 let liftedSKIq = liftLambda(aNormModSKIq, true);
 liftedSKIq.eval(true);
+
+function liftLambdaMod(term, toplevel) {
+    if (term instanceof IxVar) {
+        return term;
+    }
+    else if (term instanceof IxAbs) {
+        let body = liftLambdaMod(term.body, false);
+        if (body instanceof IxLet && body.expr instanceof IxAbs) {
+            if (body.expr.contains(0)) {
+                return new IxLet(new IxAbs(body.expr), liftLambdaMod(new IxAbs(new IxLet(new IxApp(new IxVar(1), new IxVar(0)), body.body.shift(2, 1))), false));
+            }
+            else {
+                return new IxLet(body.expr.shift(0, -1), liftLambdaMod(new IxAbs(body.body.swap(0, 1)), false));
+            }
+        }
+        else if (body instanceof IxVar && body.index !== 0) {
+            return liftLambdaMod(new IxAbs(new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1)))), toplevel);
+        }
+        else {
+            return new IxAbs(body);
+        }
+    }
+    else if (term instanceof IxApp) {
+        return term;
+    }
+    else if (term instanceof IxLet) {
+        let expr = liftLambdaMod(term.expr, false);
+        if (expr instanceof IxLet) {
+            return liftLambdaMod(new IxLet(expr.expr, new IxLet(expr.body, term.body.shift(1, 1))), toplevel);
+        }
+        else if (expr instanceof IxVar) {
+            return liftLambda(term.body.subst(0, expr.shift(0, 1)).shift(0, -1), toplevel);
+        }
+        else {
+            let body = liftLambdaMod(term.body, false);
+            if (body instanceof IxLet && !(expr instanceof IxAbs) && body.expr instanceof IxAbs) {
+                if (body.expr.contains(0)) {
+                    return new IxLet(new IxAbs(body.expr), liftLambdaMod(new IxLet(expr.shift(0, 1), new IxLet(new IxApp(new IxVar(1), new IxVar(0)), body.body.shift(2, 1))), false));
+                }
+                else {
+                    return new IxLet(body.expr.shift(0, -1), liftLambdaMod(new IxLet(expr.shift(0, 1), body.body.swap(0, 1)), false));
+                }
+            }
+            else if (body instanceof IxAbs && !toplevel) {
+                return liftLambdaMod(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), new IxVar(1))))), toplevel);
+            }
+            else if (body instanceof IxVar && body.index !== 0) {
+                return liftLambdaMod(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1))))), toplevel);
+            }
+            else {
+                return new IxLet(expr, body);
+            }
+        }
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+let liftedModI = liftLambdaMod(aNormModI, true);
+let liftedModK = liftLambdaMod(aNormModK, true);
+let liftedModS = liftLambdaMod(aNormModS, true);
+let liftedModY = liftLambdaMod(aNormModY, true);
+console.log(`I = ${liftedModI.toString()}`);
+console.log(`K = ${liftedModK.toString()}`);
+console.log(`S = ${liftedModS.toString()}`);
+console.log(`Y = ${liftedModY.toString()}`);
+
+let liftedModSKIq = liftLambdaMod(aNormModSKIq, true);
+liftedModSKIq.eval(true);
