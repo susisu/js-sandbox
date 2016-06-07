@@ -1134,8 +1134,13 @@ function liftLambdaMod(term, toplevel) {
             else if (body instanceof IxAbs && !toplevel) {
                 return liftLambdaMod(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), new IxVar(1))))), toplevel);
             }
-            else if (body instanceof IxVar && body.index !== 0) {
-                return liftLambdaMod(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1))))), toplevel);
+            else if (body instanceof IxVar) {
+                if (body.index === 0) {
+                    return expr;
+                }
+                else {
+                    return liftLambdaMod(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1))))), toplevel);
+                }
             }
             else {
                 return new IxLet(expr, body);
