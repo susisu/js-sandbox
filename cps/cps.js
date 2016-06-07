@@ -1176,9 +1176,19 @@ function grassNormalize(term) {
             return grassNormalize(term.body.subst(0, term.expr.shift(0, 1)).shift(0, -1));
         }
         else {
-            // Assuming term is A-normalized, term.expr is not an instance of IxLet
-            // and grassNormalize(term.expr) cannot be an instance of IxVar.
-            return new IxLet(grassNormalize(term.expr), grassNormalize(term.body));
+            let expr = grassNormalize(term.expr);
+            if (expr instanceof IxVar) {
+                return grassNormalize(term.body.subst(0, expr.shift(0, 1)).shift(0, -1));
+            }
+            else {
+                let body = grassNormalize(term.body);
+                if (body instanceof IxVar && body.index === 0) {
+                    return expr;
+                }
+                else {
+                    return new IxLet(expr, body);
+                }
+            }
         }
     }
     else {
