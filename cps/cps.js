@@ -1139,7 +1139,7 @@ function liftLambdaMod(term, toplevel) {
                     return expr;
                 }
                 else {
-                    return liftLambdaMod(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1))))), toplevel);
+                    return liftLambdaMod(new IxLet(expr, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), body.shift(0, 1)))), toplevel);
                 }
             }
             else {
