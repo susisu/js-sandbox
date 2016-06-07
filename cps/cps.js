@@ -1025,6 +1025,8 @@ console.log(`Y = ${aNormY.toString()}`);
 let aNormSKIq = aNormalize(ixSKIq, new EmptyContext());
 aNormSKIq.eval(true);
 
+// Modified version of A-normalization
+// does not allow lambda-abstractions in applications.
 function aNormalizeMod(term, context) {
     if (term instanceof IxAbs) {
         return context.apply(new IxAbs(aNormalizeMod(term.body, new EmptyContext())));
@@ -1083,7 +1085,6 @@ console.log(`Y = ${aNormModY.toString()}`);
 let aNormModSKIq = aNormalizeMod(ixSKIq, new EmptyContext());
 aNormModSKIq.eval(true);
 
-// term must be A-normalized
 function liftLambda(term, toplevel) {
     if (term instanceof IxVar) {
         return term;
@@ -1103,6 +1104,7 @@ function liftLambda(term, toplevel) {
         }
     }
     else if (term instanceof IxApp) {
+        // Assuming an application has no lambda-abstractions (modified-A-normalized or A- and Grass-normalized).
         return term;
     }
     else if (term instanceof IxLet) {
@@ -1145,6 +1147,7 @@ console.log(`Y = ${liftedY.toString()}`);
 let liftedSKIq = liftLambda(aNormModSKIq, true);
 liftedSKIq.eval(true);
 
+// Normalization for Grass
 function grassNormalize(term) {
     if (term instanceof IxVar) {
         if (term.index === 0) {
@@ -1173,6 +1176,8 @@ function grassNormalize(term) {
             return grassNormalize(term.body.subst(0, term.expr.shift(0, 1)).shift(0, -1));
         }
         else {
+            // Assuming term is A-normalized, term.expr is not an instance of IxLet
+            // and grassNormalize(term.expr) cannot be an instance of IxVar.
             return new IxLet(grassNormalize(term.expr), grassNormalize(term.body));
         }
     }
