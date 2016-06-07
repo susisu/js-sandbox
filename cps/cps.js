@@ -270,6 +270,14 @@ class IxVar extends IxVal {
             return this;
         }
     }
+
+    equals(term) {
+        return term instanceof IxVar && this.index === term.index;
+    }
+
+    isClosed(n) {
+        return this.index <= n;
+    }
 }
 
 class IxAbs extends IxVal {
@@ -304,6 +312,14 @@ class IxAbs extends IxVal {
 
     swap(n, m) {
         return new IxAbs(this.body.swap(n + 1, m + 1));
+    }
+
+    equals(term) {
+        return term instanceof IxAbs && this.body.equals(term.body);
+    }
+
+    isClosed(n) {
+        return this.body.isClosed(n + 1);
     }
 }
 
@@ -352,6 +368,14 @@ class IxApp extends IxTerm {
 
     swap(n, m) {
         return new IxApp(this.func.swap(n, m), this.arg.swap(n, m));
+    }
+
+    equals(term) {
+        return term instanceof IxApp && this.func.equals(term.func) && this.arg.equals(term.arg);
+    }
+
+    isClosed(n) {
+        return this.func.isClosed(n) && this.arg.isClosed(n);
     }
 }
 
@@ -511,6 +535,14 @@ class IxContVar extends IxContVal {
             return this;
         }
     }
+
+    equals(term) {
+        return term instanceof IxContVar && this.index === term.index;
+    }
+
+    isClosed(n) {
+        return this.index <= n;
+    }
 }
 
 class IxContAbs extends IxContVal {
@@ -546,6 +578,14 @@ class IxContAbs extends IxContVal {
     swap(n, m) {
         return new IxContAbs(this.body.swap(n + 1, m + 1));
     }
+
+    equals(term) {
+        return term instanceof IxContAbs && this.body.equals(term.body);
+    }
+
+    isClosed(n) {
+        return this.body.isClosed(n + 1);
+    }
 }
 
 class IxCPSTerm extends IxVal {
@@ -580,6 +620,14 @@ class IxCPSTerm extends IxVal {
 
     swap(n, m) {
         return new IxCPSTerm(this.body.swap(n + 1, m + 1));
+    }
+
+    equals(term) {
+        return term instanceof IxCPSTerm && this.body.equals(term.body);
+    }
+
+    isClosed(n) {
+        return this.body.isClosed(n + 1);
     }
 }
 
@@ -743,6 +791,14 @@ class IxLet extends IxTerm {
 
     swap(n, m) {
         return new IxLet(this.expr.swap(n, m), this.body.swap(n + 1, m + 1));
+    }
+
+    equals(term) {
+        return term instanceof IxLet && this.expr.equals(term.expr) && this.body.equals(term.body);
+    }
+
+    isClosed(n) {
+        return this.expr.isClosed(n) && this.body.isClosed(n + 1);
     }
 }
 
