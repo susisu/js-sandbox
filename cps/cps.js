@@ -1293,7 +1293,10 @@ function optimize(term, context) {
     }
     else if (term instanceof IxLet) {
         let expr = optimize(term.expr, context);
-        if (expr instanceof IxVar) {
+        if (expr instanceof IxVal && !term.body.contains(0)) {
+            return optimize(term.body.shift(0, -1), context);
+        }
+        else if (expr instanceof IxVar) {
             return optimize(term.body.subst(0, expr.shift(0, 1)).shift(0, -1), context);
         }
         else if (expr instanceof IxAbs) {
