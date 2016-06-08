@@ -1207,3 +1207,121 @@ console.log(`Y = ${liftedModY.toString()}`);
 
 let liftedModSKIq = liftLambda(grassNormalize(aNormSKIq), true);
 liftedModSKIq.eval(true);
+
+class Nil {
+    constructor() {
+    }
+
+    toString() {
+        return "[]";
+    }
+}
+
+class Cons {
+    constructor(car, cdr) {
+        this.car = car;
+        this.cdr = cdr;
+    }
+
+    toString() {
+        return `${this.car.toString()} :: ${this.cdr.toString()}`;
+    }
+}
+
+class List {
+    constructor(nilCons) {
+        this.list = nilCons;
+    }
+
+    static empty() {
+        return new List(new Nil());
+    }
+
+    toString() {
+        return this.list.toString();
+    }
+
+    isEmpty() {
+        return this.list instanceof Nil;
+    }
+
+    append(x) {
+        return new List(new Cons(x, this.list));
+    }
+
+    head() {
+        if (this.list instanceof Nil) {
+            throw new Error("empty list");
+        }
+        else {
+            return this.list.car;
+        }
+    }
+
+    tail() {
+        if (this.list instanceof Nil) {
+            throw new Error("empty list");
+        }
+        else {
+            return new List(this.list.cdr);
+        }
+    }
+
+    findIndexBy(callback) {
+        let l = this.list;
+        let i = 0;
+        while (!(l instanceof Nil)) {
+            if (callback(l.car, i)) {
+                return i;
+            }
+            l = l.cdr;
+            i++;
+        }
+        return -1;
+    }
+}
+
+function optimize(term, context) {
+    if (term instanceof IxVar) {
+        return term;
+    }
+    else if (term instanceof IxAbs) {
+        return new IxAbs(optimize(term.body, context.append(new IxVar(0))));
+    }
+    else if (term instanceof IxApp) {
+        return term;
+    }
+    else if (term instanceof IxLet) {
+        let expr = optimize(term.expr, context);
+        if (expr instanceof IxVar) {
+            return optimize(term.body.subst(0, expr.shift(0, 1)).shift(0, -1), context);
+        }
+        else if (expr instanceof IxAbs) {
+            let n = context.findIndexBy((term, i) => expr.equals(term.shift(0, i + 1)));
+            if (n >= 0) {
+                return optimize(term.body.subst(0, new IxVar(n).shift(0, 1)).shift(0, -1), context);
+            }
+            else {
+                return new IxLet(expr, optimize(term.body, context.append(expr)));
+            }
+        }
+        else {
+            return new IxLet(expr, optimize(term.body, context.append(expr)));
+        }
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+let optI = optimize(liftedModI, List.empty());
+let optK = optimize(liftedModK, List.empty());
+let optS = optimize(liftedModS, List.empty());
+let optY = optimize(liftedModY, List.empty());
+console.log(`I = ${optI.toString()}`);
+console.log(`K = ${optK.toString()}`);
+console.log(`S = ${optS.toString()}`);
+console.log(`Y = ${optY.toString()}`);
+
+let optSKIq = optimize(liftedModSKIq, List.empty());
+optSKIq.eval(true);
