@@ -1108,25 +1108,30 @@ function liftLambda(term, toplevel) {
         return term;
     }
     else if (term instanceof IxLet) {
-        let expr = liftLambda(term.expr, false);
+        let expr = liftLambda(term.expr, toplevel);
         if (expr instanceof IxLet) {
             return liftLambda(new IxLet(expr.expr, new IxLet(expr.body, term.body.shift(1, 1))), toplevel);
         }
         else {
-            let body = liftLambda(term.body, false);
-            if (body instanceof IxLet && !(expr instanceof IxAbs) && body.expr instanceof IxAbs) {
-                if (body.expr.contains(0)) {
-                    return new IxLet(new IxAbs(body.expr), liftLambda(new IxLet(expr.shift(0, 1), new IxLet(new IxApp(new IxVar(1), new IxVar(0)), body.body.shift(2, 1))), false));
-                }
-                else {
-                    return new IxLet(body.expr.shift(0, -1), liftLambda(new IxLet(expr.shift(0, 1), body.body.swap(0, 1)), false));
-                }
-            }
-            else if (!toplevel && body instanceof IxAbs) {
-                return liftLambda(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), new IxVar(1))))), toplevel);
+            let body = liftLambda(term.body, toplevel);
+            if (toplevel) {
+                return new IxLet(expr, body);
             }
             else {
-                return new IxLet(expr, body);
+                if (body instanceof IxLet && !(expr instanceof IxAbs) && body.expr instanceof IxAbs) {
+                    if (body.expr.contains(0)) {
+                        return new IxLet(new IxAbs(body.expr), liftLambda(new IxLet(expr.shift(0, 1), new IxLet(new IxApp(new IxVar(1), new IxVar(0)), body.body.shift(2, 1))), false));
+                    }
+                    else {
+                        return new IxLet(body.expr.shift(0, -1), liftLambda(new IxLet(expr.shift(0, 1), body.body.swap(0, 1)), false));
+                    }
+                }
+                else if (body instanceof IxAbs) {
+                    return liftLambda(new IxLet(expr, new IxLet(body, new IxLet(new IxAbs(new IxVar(0)), new IxApp(new IxVar(0), new IxVar(1))))), false);
+                }
+                else {
+                    return new IxLet(expr, body);
+                }
             }
         }
     }
