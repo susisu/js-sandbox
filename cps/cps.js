@@ -1291,30 +1291,32 @@ function optimize(term, context) {
         return term;
     }
     else if (term instanceof IxAbs) {
-        return new IxAbs(optimize(term.body, context.append(new IxVar(0))));
+        // A normalized abstraction cannot be optimized
+        return term;
     }
     else if (term instanceof IxApp) {
         return term;
     }
     else if (term instanceof IxLet) {
-        let expr = optimize(term.expr, context);
-        if (expr instanceof IxVal && !term.body.contains(0)) {
-            return optimize(term.body.shift(0, -1), context);
+        // term.expr (abs or app) cannot be optimized
+        let body = optimize(term.body, context.append(term.expr));
+        if (term.expr instanceof IxVal && !body.contains(0)) {
+            return body.shift(0, -1);
         }
-        else if (expr instanceof IxVar) {
-            return optimize(term.body.subst(0, expr.shift(0, 1)).shift(0, -1), context);
+        else if (term.expr instanceof IxVar) {
+            return optimize(body.subst(0, term.expr.shift(0, 1)).shift(0, -1), context);
         }
-        else if (expr instanceof IxAbs) {
-            let n = context.findIndexBy((term, i) => expr.equals(term.shift(0, i + 1)));
+        else if (term.expr instanceof IxAbs) {
+            let n = context.findIndexBy((t, i) => term.expr.equals(t.shift(0, i + 1)));
             if (n >= 0) {
-                return optimize(term.body.subst(0, new IxVar(n).shift(0, 1)).shift(0, -1), context);
+                return optimize(body.subst(0, new IxVar(n).shift(0, 1)).shift(0, -1), context);
             }
             else {
-                return new IxLet(expr, optimize(term.body, context.append(expr)));
+                return new IxLet(term.expr, body);
             }
         }
         else {
-            return new IxLet(expr, optimize(term.body, context.append(expr)));
+            return new IxLet(term.expr, body);
         }
     }
     else {
