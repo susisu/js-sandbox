@@ -1356,3 +1356,27 @@ console.log(`Y = ${optY.toString()}`);
 
 let optSKIq = optimize(liftedModSKIq, List.empty());
 optSKIq.eval(true);
+
+function termToList(term) {
+    if (term instanceof IxAbs) {
+        return List.empty().append(term);
+    }
+    else if (term instanceof IxApp) {
+        return List.empty().append(term);
+    }
+    else if (term instanceof IxLet) {
+        return termToList(term.body).append(term.expr);
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+function termFromList(list) {
+    if (list.tail().isEmpty()) {
+        return list.head();
+    }
+    else {
+        return new IxLet(list.head(), termFromList(list.tail()));
+    }
+}
