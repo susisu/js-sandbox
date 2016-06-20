@@ -1380,3 +1380,68 @@ function termFromList(list) {
         return new IxLet(list.head(), termFromList(list.tail()));
     }
 }
+
+class Dependency {
+    constructor(map) {
+        this.map = map;
+    }
+
+    toString() {
+        if (this.map.size === 0) {
+            return "()";
+        }
+        else {
+            let arr = [];
+            for (let [i, v] of this.map.entries()) {
+                arr.push(i.toString() + " => " + v.toString());
+            }
+            return "(" + arr.join(", ") + ")";
+        }
+    }
+
+    shift() {
+        let newMap = new Map();
+        for (let [i, v] of this.map.entries()) {
+            if (i > 0) {
+                newMap.set(i - 1, v);
+            }
+        }
+        return new Dependency(newMap);
+    }
+
+    merge(dep) {
+        let newMap = new Map();
+        for (let [i, v] of this.map.entries()) {
+            newMap.set(i, v);
+        }
+        for (let [i, v] of dep.map.entries()) {
+            if (newMap.has(i)) {
+                newMap.set(i, newMap.get(i) + v);
+            }
+            else {
+                newMap.set(i, v);
+            }
+        }
+        return new Dependency(newMap);
+    }
+}
+
+function getDependency(term) {
+    if (term instanceof IxVar) {
+        let map = new Map();
+        map.set(term.index, 1);
+        return new Dependency(map);
+    }
+    else if (term instanceof IxAbs) {
+        return getDependency(term.body).shift();
+    }
+    else if (term instanceof IxApp) {
+        return getDependency(term.func).merge(getDependency(term.arg));
+    }
+    else if (term instanceof IxLet) {
+        return getDependency(term.expr).merge(getDependency(term.body).shift());
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
