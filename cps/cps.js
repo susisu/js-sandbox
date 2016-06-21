@@ -1424,6 +1424,15 @@ class Dependency {
             return "(" + arr.join(", ") + ")";
         }
     }
+
+    add(i, n) {
+        if (this.map.has(i)) {
+            this.map.set(i, this.map.get(i) + n);
+        }
+        else {
+            this.map.set(i, n);
+        }
+    }
 }
 
 function getTermDependency(term) {
