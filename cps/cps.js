@@ -1454,3 +1454,28 @@ function getTermDependency(term) {
         throw new Error("unexpected term");
     }
 }
+
+function getDependencies(terms) {
+    let len        = terms.length;
+    let deps       = [];
+    let appIndices = [];
+    for (let i = 0; i < len; i++) {
+        let dep = getTermDependency(terms[i]);
+        // applications (with side-effect) do not commute
+        if (terms[i] instanceof IxApp) {
+            for (let j of appIndices) {
+                dep.add(j, 0);
+            }
+            appIndices.push(i);
+        }
+        deps.push(dep);
+    }
+    // last term cannot be moved
+    if (len > 0) {
+        let last = deps[len - 1];
+        for (let i = 0; i <= len - 2; i++) {
+            last.add(i, 0);
+        }
+    }
+    return deps;
+}
