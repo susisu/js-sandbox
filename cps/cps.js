@@ -1386,6 +1386,32 @@ class Dependency {
         this.map = map;
     }
 
+    static shift(dep) {
+        let newMap = new Map();
+        for (let [i, v] of dep.map.entries()) {
+            if (i > 0) {
+                newMap.set(i - 1, v);
+            }
+        }
+        return new Dependency(newMap);
+    }
+
+    static merge(dep1, dep2) {
+        let newMap = new Map();
+        for (let [i, v] of dep1.map.entries()) {
+            newMap.set(i, v);
+        }
+        for (let [i, v] of dep2.map.entries()) {
+            if (newMap.has(i)) {
+                newMap.set(i, newMap.get(i) + v);
+            }
+            else {
+                newMap.set(i, v);
+            }
+        }
+        return new Dependency(newMap);
+    }
+
     toString() {
         if (this.map.size === 0) {
             return "()";
@@ -1397,32 +1423,6 @@ class Dependency {
             }
             return "(" + arr.join(", ") + ")";
         }
-    }
-
-    shift() {
-        let newMap = new Map();
-        for (let [i, v] of this.map.entries()) {
-            if (i > 0) {
-                newMap.set(i - 1, v);
-            }
-        }
-        return new Dependency(newMap);
-    }
-
-    merge(dep) {
-        let newMap = new Map();
-        for (let [i, v] of this.map.entries()) {
-            newMap.set(i, v);
-        }
-        for (let [i, v] of dep.map.entries()) {
-            if (newMap.has(i)) {
-                newMap.set(i, newMap.get(i) + v);
-            }
-            else {
-                newMap.set(i, v);
-            }
-        }
-        return new Dependency(newMap);
     }
 }
 
