@@ -1426,20 +1426,20 @@ class Dependency {
     }
 }
 
-function getDependency(term) {
+function getTermDependency(term) {
     if (term instanceof IxVar) {
         let map = new Map();
         map.set(term.index, 1);
         return new Dependency(map);
     }
     else if (term instanceof IxAbs) {
-        return getDependency(term.body).shift();
+        return Dependency.shift(getTermDependency(term.body));
     }
     else if (term instanceof IxApp) {
-        return getDependency(term.func).merge(getDependency(term.arg));
+        return Dependency.merge(getTermDependency(term.func), getTermDependency(term.arg));
     }
     else if (term instanceof IxLet) {
-        return getDependency(term.expr).merge(getDependency(term.body).shift());
+        return Dependency.merge(getTermDependency(term.expr), Dependency.shift(getTermDependency(term.body)));
     }
     else {
         throw new Error("unexpected term");
