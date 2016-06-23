@@ -1501,4 +1501,5 @@ function calcCost(perm, deps) {
             }
         }
     }
+    return c;
 }
