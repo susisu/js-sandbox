@@ -1425,6 +1425,14 @@ class Dependency {
         }
     }
 
+    has(i) {
+        return this.map.has(i);
+    }
+
+    entries() {
+        return this.map.entries();
+    }
+
     add(i, n) {
         if (this.map.has(i)) {
             this.map.set(i, this.map.get(i) + n);
