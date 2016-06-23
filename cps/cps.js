@@ -1488,7 +1488,6 @@ function calcCost(perm, deps) {
             if (k >= 0) {
                 c += (perm[i] - perm[k]) * w;
             }
-            else if (k > )
             else {
                 c += (perm[i] - k) * w;
             }
