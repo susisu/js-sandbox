@@ -1479,3 +1479,19 @@ function getDependencies(terms) {
     }
     return deps;
 }
+
+function calcCost(perm, deps) {
+    let c = 0;
+    for (let [i, dep] of deps.entries()) {
+        for (let [j, w] of dep.entries()) {
+            let k = i - j - 1;
+            if (k >= 0) {
+                c += (perm[i] - perm[k]) * w;
+            }
+            else if (k > )
+            else {
+                c += (perm[i] - k) * w;
+            }
+        }
+    }
+}
