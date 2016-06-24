@@ -1503,3 +1503,53 @@ function calcCost(perm, deps) {
     }
     return c;
 }
+
+function shiftMap(map) {
+    let newMap = new Map();
+    for (let [k, v] of map.entries()) {
+        newMap.set(k + 1, v + 1);
+    }
+    return newMap;
+}
+
+function mapIndices(map, term) {
+    if (term instanceof IxVar) {
+        if (map.has(term.index)) {
+            return new IxVar(map.get(term.index));
+        }
+        else {
+            return term;
+        }
+    }
+    else if (term instanceof IxAbs) {
+        return new IxAbs(mapIndices(shiftMap(map), term.body));
+    }
+    else if (term instanceof IxApp) {
+        return new IxApp(mapIndices(map, term.func), mapIndices(map, term.arg));
+    }
+    else if (term instanceof IxLet) {
+        return new IxLet(mapIndices(map, term.expr), mapIndices(shiftMap(map), term.body));
+    }
+    else {
+        throw new Error("unexpected term");
+    }
+}
+
+function permute(perm, terms, deps) {
+    let len       = terms.length;
+    let permTerms = [];
+    for (let i = 0; i < len; i++) {
+        let map = new Map();
+        for (let [d, _] of deps[i].entries()) {
+            let k = i - d - 1;
+            if (k >= 0) {
+                map.set(d, perm[i] - perm[k] - 1);
+            }
+            else {
+                map.set(d, perm[i] - k - 1);
+            }
+        }
+        permTerms[perm[i]] = mapIndices(map, terms[i]);
+    }
+    return permTerms;
+}
