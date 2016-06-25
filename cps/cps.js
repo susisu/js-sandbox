@@ -1472,7 +1472,7 @@ function getDependencies(terms) {
         // applications (with side-effect) do not commute
         if (terms[i] instanceof IxApp) {
             for (let j of appIndices) {
-                dep.add(j, 0);
+                dep.add(i - j - 1, 0);
             }
             appIndices.push(i);
         }
