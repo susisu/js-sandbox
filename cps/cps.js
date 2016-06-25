@@ -1553,3 +1553,66 @@ function permute(perm, terms, deps) {
     }
     return permTerms;
 }
+
+function permOptimize(term, numTrials) {
+    let terms   = termToList(term).toArray();
+    let len     = terms.length;
+    if (len <= 1) {
+        return term;
+    }
+    let deps    = getDependencies(terms);
+    let perm    = deps.map((_, i) => i);
+    let cost    = calcCost(perm, deps);
+    let minCost = cost;
+    let minPerm = perm.slice();
+    trial: for (let t = 0; t < numTrials; t++) {
+        let temp = Math.log(numTrials) * (numTrials - 1 - t) / numTrials;
+        let i    = Math.floor(Math.random() * len);
+        let j    = Math.floor(Math.random() * (len - 1));
+        if (j >= i) {
+            j += 1;
+        }
+        let pi = perm[i];
+        let pj = perm[j];
+        if (pi > pj) {
+            [i, j]   = [j, i];
+            [pi, pj] = [pj, pi];
+        }
+        for (let k = 0; k < len; k++) {
+            let pk = perm[k];
+            if (pi < pk && pk < pj && deps[k].has(k - i - 1)) {
+                continue trial;
+            }
+        }
+        for (let [d, w] of deps[j].entries()) {
+            let k = j - d - 1;
+            if (pi <= perm[k] && perm[k] < pj) {
+                continue trial;
+            }
+        }
+        [perm[i], perm[j]] = [perm[j], perm[i]];
+        let newCost = calcCost(perm, deps);
+        if (newCost <= cost || Math.random() < Math.exp(-(newCost - cost) / temp)) {
+            cost = newCost;
+            if (cost <= minCost) {
+                minCost = cost;
+                minPerm = perm.slice();
+            }
+        }
+        else {
+            [perm[i], perm[j]] = [perm[j], perm[i]];
+        }
+    }
+    return termFromList(List.fromArray(permute(minPerm, terms, deps)));
+}
+
+let permI    = permOptimize(liftedModI, 1000);
+let permK    = permOptimize(liftedModK, 1000);
+let permS    = permOptimize(liftedModS, 1000);
+let permY    = permOptimize(liftedModY, 1000);
+let permSKIq = permOptimize(liftedModSKIq, 1000);
+console.log(`   I = ${permI.toString()}`);
+console.log(`   K = ${permK.toString()}`);
+console.log(`   S = ${permS.toString()}`);
+console.log(`   Y = ${permY.toString()}`);
+console.log(`SKIq = ${permSKIq.toString()}`);
