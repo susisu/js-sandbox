@@ -21,11 +21,11 @@ let escaped   = lq.char("\\").then(lq.choice([
     lq.char("\""),
     lq.char("\\"),
     lq.char("/"),
-    lq.char("b").then("\b"),
-    lq.char("f").then("\f"),
-    lq.char("n").then("\n"),
-    lq.char("r").then("\r"),
-    lq.char("t").then("\t"),
+    lq.char("b").then(lq.pure("\b")),
+    lq.char("f").then(lq.pure("\f")),
+    lq.char("n").then(lq.pure("\n")),
+    lq.char("r").then(lq.pure("\r")),
+    lq.char("t").then(lq.pure("\t")),
     lq.char("u").then(hexDigits)
         .map(x => String.fromCharCode(parseInt(x, 16)))
 ]));
