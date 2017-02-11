@@ -125,8 +125,8 @@ let object = map(
 let json = left(right(spaces, value), eof);
 
 function _parse(src) {
-    let res = parse(json, "", src);
-    if (res.succeeded) {
+    let res = parse(json, "", src, undefined, { unicode: false });
+    if (res.success) {
         return res.value;
     }
     else {
