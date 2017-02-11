@@ -51,23 +51,23 @@
 
          draw(this, size * size, 0.0, 0.0, 0.0, 0.0, 0, 4);
 
-        var bf      = new PIXI.filters.BlurFilter();
-        bf.blur     = 4;
-        var cmf1    = new PIXI.filters.ColorMatrixFilter();
-        cmf1.matrix = [
-            1, 0, 0, 0, 0,
-            0, 1, 0, 0, 0,
-            0, 0, 1, 0, 0,
-            0, 0, 0, 1, -0.4
-        ];
-        var cmf2    = new PIXI.filters.ColorMatrixFilter();
-        cmf2.matrix = [
-            1, 0, 0,   0, 0,
-            0, 1, 0,   0, 0,
-            0, 0, 1,   0, 0,
-            0, 0, 0, 100, 0
-        ];
-        this.filters = [bf, cmf1, cmf2];
+        // var bf      = new PIXI.filters.BlurFilter();
+        // bf.blur     = 4;
+        // var cmf1    = new PIXI.filters.ColorMatrixFilter();
+        // cmf1.matrix = [
+        //     1, 0, 0, 0, 0,
+        //     0, 1, 0, 0, 0,
+        //     0, 0, 1, 0, 0,
+        //     0, 0, 0, 1, -0.4
+        // ];
+        // var cmf2    = new PIXI.filters.ColorMatrixFilter();
+        // cmf2.matrix = [
+        //     1, 0, 0,   0, Math.random(),
+        //     0, 1, 0,   0, Math.random(),
+        //     0, 0, 1,   0, Math.random(),
+        //     0, 0, 0, 100, 0
+        // ];
+        // this.filters = [bf, cmf1, cmf2];
     }
 
     Splash.prototype = Object.create(PIXI.Graphics.prototype, {

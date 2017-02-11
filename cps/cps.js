@@ -187,7 +187,8 @@ console.log(`S = ${S.toString()}`);
 console.log(`Y = ${Y.toString()}`);
 
 let SKIq = parse(`(λx. λy. λz. x z (y z)) (λx. λy. x) (λx. x) q`);
-SKIq.eval(true);
+// let SKIq = parse(`(λx. λz. x (λy. x)) (λx. x) (q q)`);
+// SKIq.eval(true);
 
 class IxTerm {
     constructor() {
@@ -413,7 +414,7 @@ console.log(`S = ${ixS.toString()}`);
 console.log(`Y = ${ixY.toString()}`);
 
 let ixSKIq = deBruijnIndex(SKIq, ["q"]);
-ixSKIq.eval(true);
+// ixSKIq.eval(true);
 
 function cpsTransform(term) {
     if (term instanceof IxVar) {
@@ -470,13 +471,13 @@ let cpsI = cpsTransform(ixI);
 let cpsK = cpsTransform(ixK);
 let cpsS = cpsTransform(ixS);
 let cpsY = cpsTransform(ixY);
-console.log(`I = ${cpsI.toString()}`);
-console.log(`K = ${cpsK.toString()}`);
-console.log(`S = ${cpsS.toString()}`);
-console.log(`Y = ${cpsY.toString()}`);
+// console.log(`I = ${cpsI.toString()}`);
+// console.log(`K = ${cpsK.toString()}`);
+// console.log(`S = ${cpsS.toString()}`);
+// console.log(`Y = ${cpsY.toString()}`);
 
 let cpsSKIq = cpsTransform(ixSKIq);
-evalCPS(cpsSKIq, true);
+// evalCPS(cpsSKIq, true);
 
 class IxContVal extends IxVal {
     constructor() {
@@ -681,13 +682,13 @@ let cpsModI = cpsTransformMod(ixI);
 let cpsModK = cpsTransformMod(ixK);
 let cpsModS = cpsTransformMod(ixS);
 let cpsModY = cpsTransformMod(ixY);
-console.log(`I = ${cpsModI.toString()}`);
-console.log(`K = ${cpsModK.toString()}`);
-console.log(`S = ${cpsModS.toString()}`);
-console.log(`Y = ${cpsModY.toString()}`);
+// console.log(`I = ${cpsModI.toString()}`);
+// console.log(`K = ${cpsModK.toString()}`);
+// console.log(`S = ${cpsModS.toString()}`);
+// console.log(`Y = ${cpsModY.toString()}`);
 
 let cpsModSKIq = cpsTransformMod(ixSKIq);
-evalCPS(cpsModSKIq, true);
+// evalCPS(cpsModSKIq, true);
 
 function normalize2(term) {
     if (term instanceof IxVar || term instanceof IxContVar) {
@@ -741,13 +742,13 @@ let cps2I = cpsTransform2(ixI);
 let cps2K = cpsTransform2(ixK);
 let cps2S = cpsTransform2(ixS);
 let cps2Y = cpsTransform2(ixY);
-console.log(`I = ${cps2I.toString()}`);
-console.log(`K = ${cps2K.toString()}`);
-console.log(`S = ${cps2S.toString()}`);
-console.log(`Y = ${cps2Y.toString()}`);
+// console.log(`I = ${cps2I.toString()}`);
+// console.log(`K = ${cps2K.toString()}`);
+// console.log(`S = ${cps2S.toString()}`);
+// console.log(`Y = ${cps2Y.toString()}`);
 
 let cps2SKIq = cpsTransform2(ixSKIq);
-evalCPS(cps2SKIq, true);
+// evalCPS(cps2SKIq, true);
 
 class IxLet extends IxTerm {
     constructor(expr, body) {
@@ -873,13 +874,13 @@ let unCPSI = unCPSTransform(cpsModI);
 let unCPSK = unCPSTransform(cpsModK);
 let unCPSS = unCPSTransform(cpsModS);
 let unCPSY = unCPSTransform(cpsModY);
-console.log(`I = ${unCPSI.toString()}`);
-console.log(`K = ${unCPSK.toString()}`);
-console.log(`S = ${unCPSS.toString()}`);
-console.log(`Y = ${unCPSY.toString()}`);
+// console.log(`I = ${unCPSI.toString()}`);
+// console.log(`K = ${unCPSK.toString()}`);
+// console.log(`S = ${unCPSS.toString()}`);
+// console.log(`Y = ${unCPSY.toString()}`);
 
 let unCPSSKIq = unCPSTransform(cpsModSKIq);
-unCPSSKIq.eval(true);
+// unCPSSKIq.eval(true);
 
 class EvalContext {
     constructor() {
@@ -1023,7 +1024,7 @@ console.log(`S = ${aNormS.toString()}`);
 console.log(`Y = ${aNormY.toString()}`);
 
 let aNormSKIq = aNormalize(ixSKIq, new EmptyContext());
-aNormSKIq.eval(true);
+// aNormSKIq.eval(true);
 
 // Modified version of A-normalization
 // does not allow lambda-abstractions in applications.
@@ -1077,13 +1078,13 @@ let aNormModI = aNormalizeMod(ixI, new EmptyContext());
 let aNormModK = aNormalizeMod(ixK, new EmptyContext());
 let aNormModS = aNormalizeMod(ixS, new EmptyContext());
 let aNormModY = aNormalizeMod(ixY, new EmptyContext());
-console.log(`I = ${aNormModI.toString()}`);
-console.log(`K = ${aNormModK.toString()}`);
-console.log(`S = ${aNormModS.toString()}`);
-console.log(`Y = ${aNormModY.toString()}`);
+// console.log(`I = ${aNormModI.toString()}`);
+// console.log(`K = ${aNormModK.toString()}`);
+// console.log(`S = ${aNormModS.toString()}`);
+// console.log(`Y = ${aNormModY.toString()}`);
 
 let aNormModSKIq = aNormalizeMod(ixSKIq, new EmptyContext());
-aNormModSKIq.eval(true);
+// aNormModSKIq.eval(true);
 
 function liftLambda(term, toplevel) {
     if (term instanceof IxVar) {
@@ -1144,13 +1145,13 @@ let liftedI = liftLambda(aNormModI, true);
 let liftedK = liftLambda(aNormModK, true);
 let liftedS = liftLambda(aNormModS, true);
 let liftedY = liftLambda(aNormModY, true);
-console.log(`I = ${liftedI.toString()}`);
-console.log(`K = ${liftedK.toString()}`);
-console.log(`S = ${liftedS.toString()}`);
-console.log(`Y = ${liftedY.toString()}`);
+// console.log(`I = ${liftedI.toString()}`);
+// console.log(`K = ${liftedK.toString()}`);
+// console.log(`S = ${liftedS.toString()}`);
+// console.log(`Y = ${liftedY.toString()}`);
 
 let liftedSKIq = liftLambda(aNormModSKIq, true);
-liftedSKIq.eval(true);
+// liftedSKIq.eval(true);
 
 // Normalization for Grass
 function grassNormalize(term) {
@@ -1201,10 +1202,19 @@ function grassNormalize(term) {
     }
 }
 
-let liftedModI = liftLambda(grassNormalize(aNormI), true);
-let liftedModK = liftLambda(grassNormalize(aNormK), true);
-let liftedModS = liftLambda(grassNormalize(aNormS), true);
-let liftedModY = liftLambda(grassNormalize(aNormY), true);
+let grassI = grassNormalize(aNormI);
+let grassK = grassNormalize(aNormK);
+let grassS = grassNormalize(aNormS);
+let grassY = grassNormalize(aNormY);
+console.log(`I = ${grassI.toString()}`);
+console.log(`K = ${grassK.toString()}`);
+console.log(`S = ${grassS.toString()}`);
+console.log(`Y = ${grassY.toString()}`);
+
+let liftedModI = liftLambda(grassI, true);
+let liftedModK = liftLambda(grassK, true);
+let liftedModS = liftLambda(grassS, true);
+let liftedModY = liftLambda(grassY, true);
 console.log(`I = ${liftedModI.toString()}`);
 console.log(`K = ${liftedModK.toString()}`);
 console.log(`S = ${liftedModS.toString()}`);
@@ -1245,7 +1255,7 @@ class List {
     static fromArray(arr) {
         let l   = new Nil();
         let len = arr.length;
-        for (let i = len - i; i >= 0; i--) {
+        for (let i = len - 1; i >= 0; i--) {
             l = new Cons(arr[i], l);
         }
         return new List(l);
@@ -1355,7 +1365,7 @@ console.log(`S = ${optS.toString()}`);
 console.log(`Y = ${optY.toString()}`);
 
 let optSKIq = optimize(liftedModSKIq, List.empty());
-optSKIq.eval(true);
+// optSKIq.eval(true);
 
 function termToList(term) {
     if (term instanceof IxAbs) {

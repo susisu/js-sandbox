@@ -117,7 +117,6 @@ function Lambda(argName, body) {
     this.argName = argName;
     this.body    = body;
 }
-
 Lambda.prototype = Object.create(Expr.prototype, {
     "constructor": {
         "writable"    : true,
@@ -162,7 +161,6 @@ App.prototype = Object.create(Expr.prototype, {
     }
 });
 
-
 var env = Object.create(null);
 env["x"] = Lazy.val(2);
 env["y"] = Lazy(() => { console.log("y is evaluated!"); return Promise.resolve(3); });
@@ -183,5 +181,18 @@ print(
     App(
         App(Var("K"), Var("x")),
         Var("y")
+    )
+);
+
+print(
+    App(
+        App(
+            App(
+                Var("S"),
+                Var("K")
+            ),
+            Var("K")
+        ),
+        Lit(3)
     )
 );
