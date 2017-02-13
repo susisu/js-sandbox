@@ -1,3 +1,9 @@
+/*
+ * Reference:
+ * - https://tromp.github.io/cl/lazy-k.html
+ * - https://en.wikipedia.org/wiki/Combinatory_logic
+ */
+
 "use strict";
 
 class Term {
