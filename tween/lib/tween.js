@@ -1,8 +1,7 @@
 "use strict";
 
 class Tween {
-    constructor(duration, initialize, animate, finalize, ease) {
-        this.duration   = duration;
+    constructor(initialize, animate, finalize, ease) {
         this.initialize = initialize;
         this.animate    = animate;
         this.finalize   = finalize;
