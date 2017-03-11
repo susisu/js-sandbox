@@ -15,11 +15,16 @@ class TweenPreset {
         this.tween     = tween;
     }
 
-    static of(obj) {
-        if (Array.isArray(obj)) {
-            return new TweenPreset(obj[0], obj[1]);
+    static of(object) {
+        if (object instanceof TweenPreset) {
+            return object;
         }
-        return new TweenPreset(obj.startTime, obj.tween);
+        else if (Array.isArray(object)) {
+            return new TweenPreset(object[0], object[1]);
+        }
+        else {
+            return new TweenPreset(object.startTime, object.tween);
+        }
     }
 }
 
