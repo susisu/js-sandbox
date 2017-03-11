@@ -34,6 +34,22 @@ class TweenInstance {
         this.tween     = tween;
         this.context   = {};
     }
+
+    static fromPreset(preset) {
+        return new TweenInstance(preset.startTime, preset.tween);
+    }
+
+    initialize() {
+        this.tween.initialize.call(this.context, this.context);
+    }
+
+    animate(time) {
+        this.tween.animate.call(this.context, time - this.startTime, this.context);
+    }
+
+    finalize() {
+        this.tween.finalize.call(this.context, this.context);
+    }
 }
 
 class Timeline {
