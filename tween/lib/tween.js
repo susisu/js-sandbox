@@ -1,11 +1,10 @@
 "use strict";
 
 class Tween {
-    constructor(initialize, animate, finalize, ease) {
+    constructor(initialize, animate, finalize) {
         this.initialize = initialize;
         this.animate    = animate;
         this.finalize   = finalize;
-        this.ease       = ease;
     }
 }
 
