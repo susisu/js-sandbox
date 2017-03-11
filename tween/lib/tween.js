@@ -9,6 +9,20 @@ class Tween {
     }
 }
 
+class TweenPreset {
+    constructor(startTime, tween) {
+        this.startTime = startTime;
+        this.tween     = tween;
+    }
+
+    of(obj) {
+        if (Array.isArray(obj)) {
+            return new TweenPreset(obj[0], obj[1]);
+        }
+        return new TweenPreset(obj.startTime, obj.tween);
+    }
+}
+
 class TweenInstance {
     constructor(startTime, tween) {
         this.startTime = startTime;
