@@ -15,7 +15,7 @@ class TweenPreset {
         this.tween     = tween;
     }
 
-    of(obj) {
+    static of(obj) {
         if (Array.isArray(obj)) {
             return new TweenPreset(obj[0], obj[1]);
         }
