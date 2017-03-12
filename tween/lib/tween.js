@@ -8,6 +8,25 @@ class Event {
     }
 }
 
+class Tween extends Event {
+    constructor(initialize, finalize, duration, animate, ease) {
+        super(
+            initialize,
+            finalize,
+            (time, context) => {
+                if (time >= duration) {
+                    return true;
+                }
+                const degree = ease.call(undefined, time / this.duration);
+                return this.animate.call(context, degree, context);
+            }
+        );
+        this.duration = duration;
+        this.animate  = animate;
+        this.ease     = ease;
+    }
+}
+
 class EventPreset {
     constructor(startTime, event) {
         this.startTime = startTime;
