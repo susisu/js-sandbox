@@ -1,53 +1,53 @@
 "use strict";
 
-class Tween {
-    constructor(initialize, animate, finalize) {
+class Event {
+    constructor(initialize, finalize, update) {
         this.initialize = initialize;
-        this.animate    = animate;
         this.finalize   = finalize;
+        this.update     = update;
     }
 }
 
-class TweenPreset {
-    constructor(startTime, tween) {
+class EventPreset {
+    constructor(startTime, event) {
         this.startTime = startTime;
-        this.tween     = tween;
+        this.event     = event;
     }
 
     static of(object) {
-        if (object instanceof TweenPreset) {
+        if (object instanceof EventPreset) {
             return object;
         }
         else if (Array.isArray(object)) {
-            return new TweenPreset(object[0], object[1]);
+            return new EventPreset(object[0], object[1]);
         }
         else {
-            return new TweenPreset(object.startTime, object.tween);
+            return new EventPreset(object.startTime, object.event);
         }
     }
 }
 
-class TweenInstance {
-    constructor(startTime, tween) {
+class EventInstance {
+    constructor(startTime, event) {
         this.startTime = startTime;
-        this.tween     = tween;
+        this.event     = event;
         this.context   = {};
     }
 
     static fromPreset(preset) {
-        return new TweenInstance(preset.startTime, preset.tween);
+        return new EventInstance(preset.startTime, preset.event);
     }
 
     initialize() {
-        this.tween.initialize.call(this.context, this.context);
+        this.event.initialize.call(this.context, this.context);
     }
 
-    animate(time) {
-        this.tween.animate.call(this.context, time - this.startTime, this.context);
+    update(time) {
+        this.event.update.call(this.context, time - this.startTime, this.context);
     }
 
     finalize() {
-        this.tween.finalize.call(this.context, this.context);
+        this.event.finalize.call(this.context, this.context);
     }
 }
 
