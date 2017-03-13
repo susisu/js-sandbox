@@ -18,7 +18,7 @@ class Tween extends Event {
                     return true;
                 }
                 const degree = ease.call(undefined, time / this.duration);
-                return this.animate.call(context, degree, context);
+                return this.animate.call(undefined, degree, context);
             }
         );
         this.duration = duration;
@@ -58,15 +58,15 @@ class EventInstance {
     }
 
     initialize() {
-        this.event.initialize.call(this.context, this.context);
+        this.event.initialize.call(undefined, this.context);
     }
 
     update(time) {
-        this.event.update.call(this.context, time - this.startTime, this.context);
+        this.event.update.call(undefined, time - this.startTime, this.context);
     }
 
     finalize() {
-        this.event.finalize.call(this.context, this.context);
+        this.event.finalize.call(undefined, this.context);
     }
 }
 
