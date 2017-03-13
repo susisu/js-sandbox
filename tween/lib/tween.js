@@ -14,7 +14,7 @@ class Tween extends Event {
             initialize,
             finalize,
             (time, context) => {
-                if (time >= duration) {
+                if (time >= this.duration) {
                     return true;
                 }
                 const degree = ease.call(undefined, time / this.duration);
