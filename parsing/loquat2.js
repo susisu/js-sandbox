@@ -6,12 +6,6 @@ const _char = require("loquat-char")(_core);
 const _comb = require("loquat-combinators")(_core);
 
 const {
-    SourcePos,
-    ParseError,
-    Config,
-    State,
-    Result,
-    Parser,
     lazy,
     parse
 } = _core;
@@ -22,24 +16,16 @@ const {
     right,
     bind,
     then,
-    mplus,
-    label,
-    many
+    skipMany
 } = _prim;
 const {
     string,
     oneOf,
-    noneOf,
     char,
-    spaces,
-    digit,
-    manyChars,
-    manyChars1,
     regexp
 } = _char;
 const {
     choice,
-    option,
     between,
     sepBy,
     eof
@@ -69,8 +55,10 @@ function interpretEscapes(str) {
     return str.replace(/\\(u[0-9A-Fa-f]{4}|[^u])/g, f);
 }
 
+const whitespace = regexp(/\s*/m);
+
 function lexeme(parser) {
-    return left(parser, spaces);
+    return left(parser, whitespace);
 }
 
 let lbrace   = lexeme(char("{"));
@@ -122,7 +110,7 @@ let object = map(
     }
 );
 
-let json = left(right(spaces, value), eof);
+let json = left(right(whitespace, value), eof);
 
 function _parse(src) {
     let res = parse(json, "", src, undefined, { unicode: false });
