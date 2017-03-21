@@ -73,11 +73,30 @@ class EventInstance {
 class Timeline {
     constructor() {
         this._currentTime = 0;
-        this._pendingInstances = new Map();
-        this._activeInstances  = new Map();
+        this._presets     = [];
+        this._instances   = new Set();
     }
 
     get currentTime() {
         return this._currentTime;
+    }
+
+    add(eventOrPreset, startTime) {
+        const preset = eventOrPreset instanceof Event
+            ? new EventPreset(
+                startTime !== undefined ? startTime : this._currentTime,
+                eventOrPreset
+            )
+            : EventPreset.of(eventOrPreset);
+        // TODO: binary search?
+        for (let i = 0; i < this._presets.length; i++) {
+            if (this._presets[i].startTime > preset.startTime) {
+                this._presets.splice(i, 0, preset);
+                break;
+            }
+            if (i === this._presets.length - 1) {
+                this._presets.push(preset);
+            }
+        }
     }
 }
