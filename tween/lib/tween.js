@@ -17,7 +17,7 @@ class Tween extends Event {
                 if (time >= this.duration) {
                     return true;
                 }
-                const degree = ease.call(undefined, time / this.duration);
+                const degree = this.ease.call(undefined, time / this.duration);
                 return this.animate.call(undefined, degree, context);
             }
         );
