@@ -1,29 +1,37 @@
 "use strict";
 
-class Event {
-  constructor(initialize, finalize, update) {
-    this.initialize = initialize;
-    this.finalize   = finalize;
-    this.update     = update;
-  }
+/*
+TODO: arguments
+interface Event {
+  initialize();
+  finalize();
+  update();
 }
+*/
 
-class Tween extends Event {
+class Tween {
   constructor(initialize, finalize, duration, animate, ease) {
-    super(
-      initialize,
-      finalize,
-      (time, context) => {
-        if (time >= this.duration) {
-          return true;
-        }
-        const degree = this.ease.call(undefined, time / this.duration);
-        return this.animate.call(undefined, degree, context);
-      }
-    );
-    this.duration = duration;
-    this.animate  = animate;
-    this.ease     = ease;
+    this._initialize = initialize;
+    this._finalize   = finalize;
+    this._duration   = duration;
+    this._animate    = animate;
+    this._ease       = ease;
+  }
+
+  initialize() {
+    return this._initialize.call(undefined);
+  }
+
+  finalize() {
+    return this._finalize.call(undefined);
+  }
+
+  update(time, context) {
+    if (time >= this._duration) {
+      return true;
+    }
+    const degree = this.ease.call(undefined, time / this._duration);
+    return this._animate.call(undefined, degree, context);
   }
 }
 
