@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint src --fix",
+    "lint": "eslint index.js lib --fix",
     "flow": "flow check",
     "start": "babel-node index.js",
     "full": "npm run lint && npm run flow && npm start"
