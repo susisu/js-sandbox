@@ -1,0 +1,28 @@
+{
+  "name": "@susisu/system-f",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint src --fix",
+    "flow": "flow check",
+    "start": "babel-node index.js",
+    "full": "npm run lint && npm run flow && npm start"
+  },
+  "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
+  "license": "MIT",
+  "dependencies": {
+    "loquat": "^2.0.0",
+    "loquat-token": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "eslint": "^3.19.0",
+    "eslint-plugin-flowtype": "^2.33.0",
+    "flow-bin": "^0.46.0"
+  }
+}

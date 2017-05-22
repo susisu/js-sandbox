@@ -1,0 +1,8 @@
+# temporary
+/temp/
+
+# config
+.gitignore
+.eslintrc.json
+.flowconfig
+.babelrc

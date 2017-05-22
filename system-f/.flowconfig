@@ -1,0 +1,10 @@
+[ignore]
+.*/temp/.*
+.*/node_modules/.*
+.*/lib/.*
+
+[include]
+
+[libs]
+
+[options]
