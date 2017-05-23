@@ -36,7 +36,7 @@ export class TyArr extends Type {
     const domStr = this.dom instanceof TyVar
       ? this.dom.toString()
       : "(" + this.dom.toString() + ")";
-    return domStr + " → " + this.codom.toString();
+    return domStr + " -> " + this.codom.toString();
   }
 }
 
@@ -51,6 +51,6 @@ export class TyAll extends Type {
   }
 
   toString(): string {
-    return "∀" + this.paramName + ". " + this.body.toString();
+    return "forall " + this.paramName + ". " + this.body.toString();
   }
 }
