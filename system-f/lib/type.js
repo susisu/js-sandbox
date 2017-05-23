@@ -41,16 +41,16 @@ export class TyArr extends Type {
 }
 
 export class TyAll extends Type {
-  param: string;
+  paramName: string;
   body: Type;
 
-  constructor(param: string, body: Type) {
+  constructor(paramName: string, body: Type) {
     super();
-    this.param = param;
-    this.body  = body;
+    this.paramName = paramName;
+    this.body      = body;
   }
 
   toString(): string {
-    return "∀" + this.param + ". " + this.body.toString();
+    return "∀" + this.paramName + ". " + this.body.toString();
   }
 }

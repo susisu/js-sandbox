@@ -25,19 +25,19 @@ export class TmVar extends Term {
 }
 
 export class TmAbs extends Term {
-  param: string;
+  paramName: string;
   paramType: Type;
   body: Term;
 
-  constructor(param: string, paramType: Type, body: Term) {
+  constructor(paramName: string, paramType: Type, body: Term) {
     super();
-    this.param     = param;
+    this.paramName = paramName;
     this.paramType = paramType;
     this.body      = body;
   }
 
   toString(): string {
-    return "λ" + this.param + " : " + this.paramType.toString() + ". " + this.body.toString();
+    return "λ" + this.paramName + " : " + this.paramType.toString() + ". " + this.body.toString();
   }
 }
 
@@ -64,17 +64,17 @@ export class TmApp extends Term {
 }
 
 export class TmTyAbs extends Term {
-  param: string;
+  paramName: string;
   body: Term;
 
-  constructor(param: string, body: Term) {
+  constructor(paramName: string, body: Term) {
     super();
-    this.param = param;
-    this.body  = body;
+    this.paramName = paramName;
+    this.body      = body;
   }
 
   toString(): string {
-    return "Λ" + this.param + ". " + this.body.toString();
+    return "Λ" + this.paramName + ". " + this.body.toString();
   }
 }
 
