@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "flow-typed install",
     "lint": "eslint index.js lib --fix",
     "flow": "flow check",
     "start": "babel-node index.js",
@@ -12,6 +13,7 @@
   "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
   "license": "MIT",
   "dependencies": {
+    "immutable": "^3.8.1",
     "loquat": "^2.0.0",
     "loquat-token": "^2.0.0"
   },
@@ -24,6 +26,7 @@
     "eslint": "^3.19.0",
     "eslint-plugin-disable": "^0.3.0",
     "eslint-plugin-flowtype": "^2.33.0",
-    "flow-bin": "^0.46.0"
+    "flow-bin": "^0.46.0",
+    "flow-typed": "^2.1.2"
   }
 }
