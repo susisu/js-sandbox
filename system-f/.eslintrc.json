@@ -43,6 +43,7 @@
     "strict": ["error"],
     "no-label-var": ["error"],
     "no-shadow-restricted-names": ["error"],
+    "no-unused-vars": ["error", { "args": "none" }],
 
     "array-bracket-spacing": ["error", "never"],
     "block-spacing": ["error", "always"],
