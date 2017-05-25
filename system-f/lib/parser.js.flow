@@ -1,0 +1,7 @@
+// @flow
+
+import { Term } from "./term.js";
+
+declare function parse(src: string): Term;
+
+export { parse };
