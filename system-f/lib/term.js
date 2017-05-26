@@ -2,10 +2,14 @@
 
 import { Stack } from "immutable";
 
+import type { Showable } from "./common.js";
 import { Type } from "./type.js";
 
 export class Term {
-  constructor() {
+  pos: Showable;
+
+  constructor(pos: Showable) {
+    this.pos = pos;
   }
 
   toString(): string {
@@ -16,8 +20,8 @@ export class Term {
 export class TmVar extends Term {
   name: string;
 
-  constructor(name: string) {
-    super();
+  constructor(pos: Showable, name: string) {
+    super(pos);
     this.name = name;
   }
 
@@ -31,8 +35,8 @@ export class TmAbs extends Term {
   paramType: Type;
   body: Term;
 
-  constructor(paramName: string, paramType: Type, body: Term) {
-    super();
+  constructor(pos: Showable, paramName: string, paramType: Type, body: Term) {
+    super(pos);
     this.paramName = paramName;
     this.paramType = paramType;
     this.body      = body;
@@ -49,8 +53,8 @@ export class TmApp extends Term {
   func: Term;
   arg: Term;
 
-  constructor(func: Term, arg: Term) {
-    super();
+  constructor(pos: Showable, func: Term, arg: Term) {
+    super(pos);
     this.func = func;
     this.arg  = arg;
   }
@@ -71,8 +75,8 @@ export class TmTyAbs extends Term {
   paramName: string;
   body: Term;
 
-  constructor(paramName: string, body: Term) {
-    super();
+  constructor(pos: Showable, paramName: string, body: Term) {
+    super(pos);
     this.paramName = paramName;
     this.body      = body;
   }
@@ -86,8 +90,8 @@ export class TmTyApp extends Term {
   func: Term;
   arg: Type;
 
-  constructor(func: Term, arg: Type) {
-    super();
+  constructor(pos: Showable, func: Term, arg: Type) {
+    super(pos);
     this.func = func;
     this.arg  = arg;
   }

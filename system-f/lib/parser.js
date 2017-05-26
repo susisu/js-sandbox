@@ -31,16 +31,18 @@ const funL   = tp.reserved("Fun").or(tp.reservedOp("Λ"));
 
 const type = lq.lazy(() => tyArr);
 const tyVar = lq.do(function* () {
+  const pos  = yield lq.getPosition;
   const name = yield tp.identifier;
-  return new TyVar(name);
+  return new TyVar(pos, name);
 });
 const tyAll = lq.do(function* () {
+  const pos = yield lq.getPosition;
   yield forall;
   const params = yield tp.commaSep1(tp.identifier);
   yield dot;
   const body = yield type;
   return params.reduceRight(
-    (b, p) => new TyAll(p, b),
+    (b, p) => new TyAll(pos, p, b),
     body
   );
 });
@@ -52,7 +54,8 @@ const atype = lq.choice([
 ]);
 const tyArr = lq.chainr1(
   atype,
-  arrow.return((dom, codom) => new TyArr(dom, codom))
+  lq.getPosition.left(arrow)
+    .map(pos => (dom, codom) => new TyArr(pos, dom, codom))
 );
 
 const term = lq.lazy(() => lq.choice([
@@ -62,8 +65,9 @@ const term = lq.lazy(() => lq.choice([
   tp.parens(term)
 ]));
 const tmVar = lq.do(function* () {
+  const pos  = yield lq.getPosition;
   const name = yield tp.identifier;
-  return new TmVar(name);
+  return new TmVar(pos, name);
 });
 const param = lq.do(function* () {
   const paramName = yield tp.identifier;
@@ -72,22 +76,24 @@ const param = lq.do(function* () {
   return { name: paramName, type: paramType };
 });
 const tmAbs = lq.do(function* () {
+  const pos = yield lq.getPosition;
   yield fun;
   const params = yield tp.commaSep1(param);
   yield dot;
   const body = yield term;
   return params.reduceRight(
-    (b, p) => new TmAbs(p.name, p.type, b),
+    (b, p) => new TmAbs(pos, p.name, p.type, b),
     body
   );
 });
 const tmTyAbs = lq.do(function* () {
+  const pos = yield lq.getPosition;
   yield funL;
   const params = yield tp.commaSep1(tp.identifier);
   yield dot;
   const body = yield term;
   return params.reduceRight(
-    (b, p) => new TmTyAbs(p, b),
+    (b, p) => new TmTyAbs(pos, p, b),
     body
   );
 });
@@ -105,8 +111,8 @@ const tmApp = lq.do(function* () {
   return args.reduce(
     (f, a) => (
       a.type === "term"
-        ? new TmApp(f, a.content)
-        : new TmTyApp(f, a.content)
+        ? new TmApp(a.content.pos, f, a.content)
+        : new TmTyApp(a.content.pos, f, a.content)
     ),
     func
   );

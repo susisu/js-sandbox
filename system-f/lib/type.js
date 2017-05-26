@@ -1,7 +1,12 @@
 // @flow
 
+import type { Showable } from "./common.js";
+
 export class Type {
-  constructor() {
+  pos: Showable;
+
+  constructor(pos: Showable) {
+    this.pos = pos;
   }
 
   toString(): string {
@@ -12,8 +17,8 @@ export class Type {
 export class TyVar extends Type {
   name: string;
 
-  constructor(name: string) {
-    super();
+  constructor(pos: Showable, name: string) {
+    super(pos);
     this.name = name;
   }
 
@@ -26,8 +31,8 @@ export class TyArr extends Type {
   dom: Type;
   codom: Type;
 
-  constructor(dom: Type, codom: Type) {
-    super();
+  constructor(pos: Showable, dom: Type, codom: Type) {
+    super(pos);
     this.dom   = dom;
     this.codom = codom;
   }
@@ -44,8 +49,8 @@ export class TyAll extends Type {
   paramName: string;
   body: Type;
 
-  constructor(paramName: string, body: Type) {
-    super();
+  constructor(pos: Showable, paramName: string, body: Type) {
+    super(pos);
     this.paramName = paramName;
     this.body      = body;
   }

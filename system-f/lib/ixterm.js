@@ -2,10 +2,17 @@
 
 import { Stack } from "immutable";
 
+import type { Showable } from "./common.js";
+import { Term as OrigTerm } from "./term.js";
 import { Type } from "./ixtype.js";
 
 export class Term {
-  constructor() {
+  pos: Showable;
+  orig: ?OrigTerm;
+
+  constructor(pos: Showable, orig: ?OrigTerm) {
+    this.pos  = pos;
+    this.orig = orig;
   }
 
   toString(): string {
@@ -28,8 +35,8 @@ export class Term {
 export class TmVar extends Term {
   index: number;
 
-  constructor(index: number) {
-    super();
+  constructor(pos: Showable, orig: ?OrigTerm, index: number) {
+    super(pos, orig);
     this.index = index;
   }
 
@@ -39,7 +46,7 @@ export class TmVar extends Term {
 
   shift(c: number, d: number): Term {
     return this.index >= c
-      ? new TmVar(this.index + d)
+      ? new TmVar(this.pos, this.orig, this.index + d)
       : this;
   }
 
@@ -58,8 +65,8 @@ export class TmAbs extends Term {
   paramType: Type;
   body: Term;
 
-  constructor(paramType: Type, body: Term) {
-    super();
+  constructor(pos: Showable, orig: ?OrigTerm, paramType: Type, body: Term) {
+    super(pos, orig);
     this.paramType = paramType;
     this.body      = body;
   }
@@ -71,6 +78,8 @@ export class TmAbs extends Term {
 
   shift(c: number, d: number): Term {
     return new TmAbs(
+      this.pos,
+      this.orig,
       this.paramType.shift(c, d),
       this.body.shift(c + 1, d)
     );
@@ -78,6 +87,8 @@ export class TmAbs extends Term {
 
   subst(index: number, term: Term): Term {
     return new TmAbs(
+      this.pos,
+      this.orig,
       this.paramType,
       this.body.subst(index + 1, term.shift(0, 1))
     );
@@ -85,6 +96,8 @@ export class TmAbs extends Term {
 
   substType(index: number, type: Type): Term {
     return new TmAbs(
+      this.pos,
+      this.orig,
       this.paramType.subst(index, type),
       this.body.substType(index + 1, type.shift(0, 1))
     );
@@ -95,8 +108,8 @@ export class TmApp extends Term {
   func: Term;
   arg: Term;
 
-  constructor(func: Term, arg: Term) {
-    super();
+  constructor(pos: Showable, orig: ?OrigTerm, func: Term, arg: Term) {
+    super(pos, orig);
     this.func = func;
     this.arg  = arg;
   }
@@ -114,6 +127,8 @@ export class TmApp extends Term {
 
   shift(c: number, d: number): Term {
     return new TmApp(
+      this.pos,
+      this.orig,
       this.func.shift(c, d),
       this.arg.shift(c, d)
     );
@@ -121,6 +136,8 @@ export class TmApp extends Term {
 
   subst(index: number, term: Term): Term {
     return new TmApp(
+      this.pos,
+      this.orig,
       this.func.subst(index, term),
       this.arg.subst(index, term)
     );
@@ -128,6 +145,8 @@ export class TmApp extends Term {
 
   substType(index: number, type: Type): Term {
     return new TmApp(
+      this.pos,
+      this.orig,
       this.func.substType(index, type),
       this.arg.substType(index, type)
     );
@@ -137,8 +156,8 @@ export class TmApp extends Term {
 export class TmTyAbs extends Term {
   body: Term;
 
-  constructor(body: Term) {
-    super();
+  constructor(pos: Showable, orig: ?OrigTerm, body: Term) {
+    super(pos, orig);
     this.body = body;
   }
 
@@ -147,15 +166,27 @@ export class TmTyAbs extends Term {
   }
 
   shift(c: number, d: number): Term {
-    return new TmTyAbs(this.body.shift(c + 1, d));
+    return new TmTyAbs(
+      this.pos,
+      this.orig,
+      this.body.shift(c + 1, d)
+    );
   }
 
   subst(index: number, term: Term): Term {
-    return new TmTyAbs(this.body.subst(index + 1, term.shift(0, 1)));
+    return new TmTyAbs(
+      this.pos,
+      this.orig,
+      this.body.subst(index + 1, term.shift(0, 1))
+    );
   }
 
   substType(index: number, type: Type): Term {
-    return new TmTyAbs(this.body.substType(index + 1, type.shift(0, 1)));
+    return new TmTyAbs(
+      this.pos,
+      this.orig,
+      this.body.substType(index + 1, type.shift(0, 1))
+    );
   }
 }
 
@@ -163,8 +194,8 @@ export class TmTyApp extends Term {
   func: Term;
   arg: Type;
 
-  constructor(func: Term, arg: Type) {
-    super();
+  constructor(pos: Showable, orig: ?OrigTerm, func: Term, arg: Type) {
+    super(pos, orig);
     this.func = func;
     this.arg  = arg;
   }
@@ -179,6 +210,8 @@ export class TmTyApp extends Term {
 
   shift(c: number, d: number): Term {
     return new TmTyApp(
+      this.pos,
+      this.orig,
       this.func.shift(c, d),
       this.arg.shift(c, d)
     );
@@ -186,6 +219,8 @@ export class TmTyApp extends Term {
 
   subst(index: number, term: Term): Term {
     return new TmTyApp(
+      this.pos,
+      this.orig,
       this.func.subst(index, term),
       this.arg
     );
@@ -193,6 +228,8 @@ export class TmTyApp extends Term {
 
   substType(index: number, type: Type): Term {
     return new TmTyApp(
+      this.pos,
+      this.orig,
       this.func.substType(index, type),
       this.arg.subst(index, type)
     );

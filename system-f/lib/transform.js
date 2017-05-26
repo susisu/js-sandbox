@@ -55,16 +55,20 @@ export function toIndexedType(context: Context, type: Type): IxType {
     if (index < 0) {
       throw new Error("unbound type variable: " + type.name);
     }
-    return new IxTyVar(index);
+    return new IxTyVar(type.pos, type, index);
   }
   else if (type instanceof TyArr) {
     return new IxTyArr(
+      type.pos,
+      type,
       toIndexedType(context, type.dom),
       toIndexedType(context, type.codom)
     );
   }
   else if (type instanceof TyAll) {
     return new IxTyAll(
+      type.pos,
+      type,
       toIndexedType(
         context.unshift(new TyBinding(type.paramName)),
         type.body
@@ -82,10 +86,12 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
     if (index < 0) {
       throw new Error("unbound variable: " + term.name);
     }
-    return new IxTmVar(index);
+    return new IxTmVar(term.pos, term, index);
   }
   else if (term instanceof TmAbs) {
     return new IxTmAbs(
+      term.pos,
+      term,
       toIndexedType(context, term.paramType),
       toIndexedTerm(
         context.unshift(new TmBinding(term.paramName, term.paramType)),
@@ -95,12 +101,16 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   }
   else if (term instanceof TmApp) {
     return new IxTmApp(
+      term.pos,
+      term,
       toIndexedTerm(context, term.func),
       toIndexedTerm(context, term.arg)
     );
   }
   else if (term instanceof TmTyAbs) {
     return new IxTmTyAbs(
+      term.pos,
+      term,
       toIndexedTerm(
         context.unshift(new TyBinding(term.paramName)),
         term.body
@@ -109,6 +119,8 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   }
   else if (term instanceof TmTyApp) {
     return new IxTmTyApp(
+      term.pos,
+      term,
       toIndexedTerm(context, term.func),
       toIndexedType(context, term.arg)
     );
@@ -193,12 +205,12 @@ function generateTmVarName(id: number): string {
 
 function _fromIndexedType(context: Context, id: number, type: IxType): [number, Type] {
   if (type instanceof IxTyVar) {
-    return [id, new TyVar(findTyVarName(context, type.index))];
+    return [id, new TyVar(type.pos, findTyVarName(context, type.index))];
   }
   else if (type instanceof IxTyArr) {
     const [id1, dom]   = _fromIndexedType(context, id, type.dom);
     const [id2, codom] = _fromIndexedType(context, id1, type.codom);
-    return [id2, new TyArr(dom, codom)];
+    return [id2, new TyArr(type.pos, dom, codom)];
   }
   else if (type instanceof IxTyAll) {
     const [id1, paramName] = [id + 1, generateTyVarName(id)];
@@ -207,7 +219,7 @@ function _fromIndexedType(context: Context, id: number, type: IxType): [number, 
       id1,
       type.body
     );
-    return [id2, new TyAll(paramName, body)];
+    return [id2, new TyAll(type.pos, paramName, body)];
   }
   else {
     throw new Error("unknown type");
@@ -218,7 +230,7 @@ function _fromIndexedTerm(
   context: Context, tyid: number, tmid: number, term: IxTerm
 ): [number, number, Term] {
   if (term instanceof IxTmVar) {
-    return [tyid, tmid, new TmVar(findTmVarName(context, term.index))];
+    return [tyid, tmid, new TmVar(term.pos, findTmVarName(context, term.index))];
   }
   else if (term instanceof IxTmAbs) {
     const [tyid1, paramType]   = _fromIndexedType(context, tyid, term.paramType);
@@ -229,12 +241,12 @@ function _fromIndexedTerm(
       tmid1,
       term.body
     );
-    return [tyid2, tmid2, new TmAbs(paramName, paramType, body)];
+    return [tyid2, tmid2, new TmAbs(term.pos, paramName, paramType, body)];
   }
   else if (term instanceof IxTmApp) {
     const [tyid1, tmid1, func] = _fromIndexedTerm(context, tyid, tmid, term.func);
     const [tyid2, tmid2, arg]  = _fromIndexedTerm(context, tyid1, tmid1, term.arg);
-    return [tyid2, tmid2, new TmApp(func, arg)];
+    return [tyid2, tmid2, new TmApp(term.pos, func, arg)];
   }
   else if (term instanceof IxTmTyAbs) {
     const [tyid1, tmid1, paramName] = [tyid + 1, tmid, generateTyVarName(tyid)];
@@ -244,12 +256,12 @@ function _fromIndexedTerm(
       tmid1,
       term.body
     );
-    return [tyid2, tmid2, new TmTyAbs(paramName, body)];
+    return [tyid2, tmid2, new TmTyAbs(term.pos, paramName, body)];
   }
   else if (term instanceof IxTmTyApp) {
     const [tyid1, tmid1, func] = _fromIndexedTerm(context, tyid, tmid, term.func);
     const [tyid2, arg]         = _fromIndexedType(context, tyid1, term.arg);
-    return [tyid2, tmid1, new TmTyApp(func, arg)];
+    return [tyid2, tmid1, new TmTyApp(term.pos, func, arg)];
   }
   else {
     throw new Error("unknown term");
