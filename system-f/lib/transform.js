@@ -1,6 +1,10 @@
 // @flow
 
 import {
+  generateTyVarName,
+  generateTmVarName
+} from "./common.js";
+import {
   Type,
   TyVar,
   TyArr,
@@ -175,26 +179,6 @@ function findTmVarName(context: Context, index: number): string {
   else {
     throw new Error("unknown binding");
   }
-}
-
-function generateTyVarName(id: number): string {
-  let name = "";
-  let n    = id;
-  while (n >= 0) {
-    name = String.fromCharCode((n % 26) + "A".charCodeAt(0)) + name;
-    n    = (n / 26 >> 0) - 1;
-  }
-  return name;
-}
-
-function generateTmVarName(id: number): string {
-  let name = "";
-  let n    = id;
-  while (n >= 0) {
-    name = String.fromCharCode((n % 26) + "a".charCodeAt(0)) + name;
-    n    = (n / 26 >> 0) - 1;
-  }
-  return name;
 }
 
 function _fromIndexedType(context: Context, id: number, type: IxType): [number, Type] {
