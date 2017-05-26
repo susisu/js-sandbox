@@ -145,6 +145,26 @@ function findTmVarName(context: Context, index: number): string {
   }
 }
 
+function generateTyVarName(id: number): string {
+  let name = "";
+  let n    = id;
+  while (n >= 0) {
+    name = String.fromCharCode((n % 26) + "A".charCodeAt(0)) + name;
+    n    = (n / 26 >> 0) - 1;
+  }
+  return name;
+}
+
+function generateTmVarName(id: number): string {
+  let name = "";
+  let n    = id;
+  while (n >= 0) {
+    name = String.fromCharCode((n % 26) + "a".charCodeAt(0)) + name;
+    n    = (n / 26 >> 0) - 1;
+  }
+  return name;
+}
+
 function _fromIndexedType(context: Context, id: number, type: IxType): [number, Type] {
   if (type instanceof IxTyVar) {
     return [id, new TyVar(findTyVarName(context, type.index))];
@@ -155,7 +175,7 @@ function _fromIndexedType(context: Context, id: number, type: IxType): [number, 
     return [id2, new TyArr(dom, codom)];
   }
   else if (type instanceof IxTyAll) {
-    const [id1, paramName] = [id + 1, "X" + id.toString()];
+    const [id1, paramName] = [id + 1, generateTyVarName(id)];
     const [id2, body]      = _fromIndexedType(
       context.unshift(new TyBinding(paramName)),
       id1,
@@ -176,7 +196,7 @@ function _fromIndexedTerm(
   }
   else if (term instanceof IxTmAbs) {
     const [tyid1, paramType]   = _fromIndexedType(context, tyid, term.paramType);
-    const [tmid1, paramName]   = [tmid + 1, "x" + tmid.toString()];
+    const [tmid1, paramName]   = [tmid + 1, generateTmVarName(tmid)];
     const [tyid2, tmid2, body] = _fromIndexedTerm(
       context.unshift(new TmBinding(paramName, paramType)),
       tyid1,
@@ -191,7 +211,7 @@ function _fromIndexedTerm(
     return [tyid2, tmid2, new TmApp(func, arg)];
   }
   else if (term instanceof IxTmTyAbs) {
-    const [tyid1, tmid1, paramName] = [tyid + 1, tmid, "X" + tyid.toString()];
+    const [tyid1, tmid1, paramName] = [tyid + 1, tmid, generateTyVarName(tyid)];
     const [tyid2, tmid2, body]      = _fromIndexedTerm(
       context.unshift(new TyBinding(paramName)),
       tyid1,
@@ -211,9 +231,9 @@ function _fromIndexedTerm(
 }
 
 export function fromIndexedType(context: Context, type: IxType): Type {
-  return _fromIndexedType(context, 1, type)[1];
+  return _fromIndexedType(context, 0, type)[1];
 }
 
 export function fromIndexedTerm(context: Context, term: IxTerm): Term {
-  return _fromIndexedTerm(context, 1, 1, term)[2];
+  return _fromIndexedTerm(context, 0, 0, term)[2];
 }
