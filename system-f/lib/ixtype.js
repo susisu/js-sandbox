@@ -15,6 +15,10 @@ export class Type {
   subst(index: number, type: Type): Type {
     throw new Error("not implemented");
   }
+
+  equals(type: Type): boolean {
+    throw new Error("not implemented");
+  }
 }
 
 export class TyVar extends Type {
@@ -39,6 +43,11 @@ export class TyVar extends Type {
     return this.index === index
       ? type
       : this;
+  }
+
+  equals(type: Type): boolean {
+    return type instanceof TyVar
+      && this.index === type.index;
   }
 }
 
@@ -72,6 +81,11 @@ export class TyArr extends Type {
       this.codom.subst(index, type)
     );
   }
+
+  equals(type: Type): boolean {
+    return type instanceof TyArr
+      && this.dom.equals(type.dom) && this.codom.equals(type.codom);
+  }
 }
 
 export class TyAll extends Type {
@@ -92,5 +106,10 @@ export class TyAll extends Type {
 
   subst(index: number, type: Type): Type {
     return new TyAll(this.body.subst(index + 1, type.shift(0, 1)));
+  }
+
+  equals(type: Type): boolean {
+    return type instanceof TyAll
+      && this.body.equals(type.body);
   }
 }
