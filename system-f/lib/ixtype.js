@@ -7,6 +7,14 @@ export class Type {
   toString(): string {
     throw new Error("not implemented");
   }
+
+  shift(c: number, d: number): Type {
+    throw new Error("not implemented");
+  }
+
+  subst(index: number, type: Type): Type {
+    throw new Error("not implemented");
+  }
 }
 
 export class TyVar extends Type {
@@ -19,6 +27,18 @@ export class TyVar extends Type {
 
   toString(): string {
     return this.index.toString();
+  }
+
+  shift(c: number, d: number): Type {
+    return this.index >= c
+      ? new TyVar(this.index + d)
+      : this;
+  }
+
+  subst(index: number, type: Type): Type {
+    return this.index === index
+      ? type
+      : this;
   }
 }
 
@@ -38,6 +58,20 @@ export class TyArr extends Type {
       : "(" + this.dom.toString() + ")";
     return domStr + " -> " + this.codom.toString();
   }
+
+  shift(c: number, d: number): Type {
+    return new TyArr(
+      this.dom.shift(c, d),
+      this.codom.shift(c, d)
+    );
+  }
+
+  subst(index: number, type: Type): Type {
+    return new TyArr(
+      this.dom.subst(index, type),
+      this.codom.subst(index, type)
+    );
+  }
 }
 
 export class TyAll extends Type {
@@ -50,5 +84,13 @@ export class TyAll extends Type {
 
   toString(): string {
     return "forall. " + this.body.toString();
+  }
+
+  shift(c: number, d: number): Type {
+    return new TyAll(this.body.shift(c + 1, d));
+  }
+
+  subst(index: number, type: Type): Type {
+    return new TyAll(this.body.subst(index + 1, type.shift(0, 1)));
   }
 }
