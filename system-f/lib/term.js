@@ -9,14 +9,6 @@ export class Term {
   toString(): string {
     throw new Error("not implemented");
   }
-
-  renameTmVars(oldName: string, newName: string): Term {
-    throw new Error("not implemented");
-  }
-
-  renameTyVars(oldName: string, newName: string): Term {
-    throw new Error("not implemented");
-  }
 }
 
 export class TmVar extends Term {
@@ -29,16 +21,6 @@ export class TmVar extends Term {
 
   toString(): string {
     return this.name;
-  }
-
-  renameTmVars(oldName: string, newName: string): Term {
-    return this.name === oldName
-      ? new TmVar(newName)
-      : this;
-  }
-
-  renameTyVars(oldName: string, newName: string): Term {
-    return this;
   }
 }
 
@@ -58,30 +40,6 @@ export class TmAbs extends Term {
     return "fun " + this.paramName
       + ": " + this.paramType.toString()
       + ". " + this.body.toString();
-  }
-
-  renameTmVars(oldName: string, newName: string): Term {
-    if (this.paramName === oldName) {
-      return this;
-    }
-    else if (this.paramName === newName) {
-      throw new Error(`cannot rename variable "${oldName}" to "${newName}"`);
-    }
-    else {
-      return new TmAbs(
-        this.paramName,
-        this.paramType,
-        this.body.renameTmVars(oldName, newName)
-      );
-    }
-  }
-
-  renameTyVars(oldName: string, newName: string): Term {
-    return new TmAbs(
-      this.paramName,
-      this.paramType.renameTyVars(oldName, newName),
-      this.body.renameTyVars(oldName, newName)
-    );
   }
 }
 
@@ -105,20 +63,6 @@ export class TmApp extends Term {
       : "(" + this.arg.toString() + ")";
     return funcStr + " " + argStr;
   }
-
-  renameTmVars(oldName: string, newName: string): Term {
-    return new TmApp(
-      this.func.renameTmVars(oldName, newName),
-      this.arg.renameTmVars(oldName, newName)
-    );
-  }
-
-  renameTyVars(oldName: string, newName: string): Term {
-    return new TmApp(
-      this.func.renameTyVars(oldName, newName),
-      this.arg.renameTyVars(oldName, newName)
-    );
-  }
 }
 
 export class TmTyAbs extends Term {
@@ -133,28 +77,6 @@ export class TmTyAbs extends Term {
 
   toString(): string {
     return "Fun " + this.paramName + ". " + this.body.toString();
-  }
-
-  renameTmVars(oldName: string, newName: string): Term {
-    return new TmTyAbs(
-      this.paramName,
-      this.body.renameTmVars(oldName, newName)
-    );
-  }
-
-  renameTyVars(oldName: string, newName: string): Term {
-    if (this.paramName === oldName) {
-      return this;
-    }
-    else if (this.paramName === newName) {
-      throw new Error(`cannot rename type variable "${oldName}" to "${newName}"`);
-    }
-    else {
-      return new TmTyAbs(
-        this.paramName,
-        this.body.renameTyVars(oldName, newName)
-      );
-    }
   }
 }
 
@@ -174,19 +96,5 @@ export class TmTyApp extends Term {
       ? this.func.toString()
       : "(" + this.func.toString() + ")";
     return funcStr + " [" + this.arg.toString() + "]";
-  }
-
-  renameTmVars(oldName: string, newName: string): Term {
-    return new TmTyApp(
-      this.func.renameTmVars(oldName, newName),
-      this.arg
-    );
-  }
-
-  renameTyVars(oldName: string, newName: string): Term {
-    return new TmTyApp(
-      this.func.renameTyVars(oldName, newName),
-      this.arg.renameTyVars(oldName, newName)
-    );
   }
 }

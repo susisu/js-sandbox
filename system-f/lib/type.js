@@ -7,10 +7,6 @@ export class Type {
   toString(): string {
     throw new Error("not implemented");
   }
-
-  renameTyVars(oldName: string, newName: string): Type {
-    throw new Error("not implemented");
-  }
 }
 
 export class TyVar extends Type {
@@ -23,12 +19,6 @@ export class TyVar extends Type {
 
   toString(): string {
     return this.name;
-  }
-
-  renameTyVars(oldName: string, newName: string): Type {
-    return this.name === oldName
-      ? new TyVar(newName)
-      : this;
   }
 }
 
@@ -48,13 +38,6 @@ export class TyArr extends Type {
       : "(" + this.dom.toString() + ")";
     return domStr + " -> " + this.codom.toString();
   }
-
-  renameTyVars(oldName: string, newName: string): Type {
-    return new TyArr(
-      this.dom.renameTyVars(oldName, newName),
-      this.codom.renameTyVars(oldName, newName)
-    );
-  }
 }
 
 export class TyAll extends Type {
@@ -69,20 +52,5 @@ export class TyAll extends Type {
 
   toString(): string {
     return "forall " + this.paramName + ". " + this.body.toString();
-  }
-
-  renameTyVars(oldName: string, newName: string): Type {
-    if (this.paramName === oldName) {
-      return this;
-    }
-    else if (this.paramName === newName) {
-      throw new Error(`cannot rename type variable "${oldName}" to "${newName}"`);
-    }
-    else {
-      return new TyAll(
-       this.paramName,
-       this.body.renameTyVars(oldName, newName)
-     );
-    }
   }
 }
