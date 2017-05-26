@@ -57,7 +57,10 @@ export function toIndexedType(context: Context, type: Type): IxType {
   if (type instanceof TyVar) {
     const index = findTyVarIndex(context, type.name);
     if (index < 0) {
-      throw new Error("unbound type variable: " + type.name);
+      throw new ReferenceError(
+          `Error at ${type.pos.toString()}:\n`
+        + `  unbound type variable: ${type.name}`
+      );
     }
     return new IxTyVar(type.pos, index);
   }
@@ -86,7 +89,10 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   if (term instanceof TmVar) {
     const index = findTmVarIndex(context, term.name);
     if (index < 0) {
-      throw new Error("unbound variable: " + term.name);
+      throw new ReferenceError(
+          `Error at ${term.pos.toString()}:\n`
+        + `  unbound variable: ${term.name}`
+      );
     }
     return new IxTmVar(term.pos, index);
   }
@@ -152,10 +158,10 @@ export function toIndexedContext(context: Context): IxContext {
 function findTyVarName(context: Context, index: number): string {
   const b = context.get(index);
   if (b === undefined) {
-    throw new RangeError("index is out of range: " + index.toString());
+    throw new RangeError("index out of range: " + index.toString());
   }
-  else if (b instanceof TmBinding) {
-    throw new Error("not a type variable at " + index.toString());
+  if (b instanceof TmBinding) {
+    throw new Error("inconsistent binding: " + index.toString());
   }
   else if (b instanceof TyBinding) {
     return b.name;
@@ -168,13 +174,13 @@ function findTyVarName(context: Context, index: number): string {
 function findTmVarName(context: Context, index: number): string {
   const b = context.get(index);
   if (b === undefined) {
-    throw new RangeError("index is out of range: " + index.toString());
+    throw new RangeError("index out of range: " + index.toString());
+  }
+  if (b instanceof TmBinding) {
+    return b.name;
   }
   else if (b instanceof TyBinding) {
-    throw new Error("not a variable at " + index.toString());
-  }
-  else if (b instanceof TmBinding) {
-    return b.name;
+    throw new Error("inconsistent binding: " + index.toString());
   }
   else {
     throw new Error("unknown binding");

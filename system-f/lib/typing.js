@@ -36,13 +36,13 @@ import {
 function findIxTmVarType(context: IxContext, index: number): IxType {
   const b = context.get(index);
   if (b === undefined) {
-    throw new RangeError("index is out of range: " + index.toString());
+    throw new RangeError("index out of range: " + index.toString());
+  }
+  if (b instanceof IxTmBinding) {
+    return b.type.shift(0, index + 1);
   }
   else if (b instanceof IxTyBinding) {
-    throw new Error("not a variable at " + index.toString());
-  }
-  else if (b instanceof IxTmBinding) {
-    return b.type.shift(0, index + 1);
+    throw new Error("inconsistent binding: " + index.toString());
   }
   else {
     throw new Error("unknown binding");
