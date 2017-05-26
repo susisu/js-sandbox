@@ -17,7 +17,7 @@ const tp = lq.makeTokenParser(new lq.LanguageDef({
   idLetter      : lq.alphaNum.or(lq.char("'")),
   opStart       : lq.oneOf(":.->λΛ∀→"),
   opLetter      : lq.oneOf(":.->λΛ∀→"),
-  reservedIds   : ["fun", "Fun", "forall"],
+  reservedIds   : ["fun", "fun2", "forall"],
   reservedOps   : [":", ".", "->", "λ", "Λ", "∀", "→"],
   caseSensitive : true
 }));
@@ -27,7 +27,7 @@ const colon  = tp.reservedOp(":");
 const forall = tp.reserved("forall").or(tp.reservedOp("∀"));
 const arrow  = tp.reservedOp("->").or(tp.reservedOp("→"));
 const fun    = tp.reserved("fun").or(tp.reservedOp("λ"));
-const funL   = tp.reserved("Fun").or(tp.reservedOp("Λ"));
+const funL   = tp.reserved("fun2").or(tp.reservedOp("Λ"));
 
 const type = lq.lazy(() => tyArr);
 const tyVar = lq.do(function* () {

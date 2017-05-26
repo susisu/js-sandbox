@@ -153,7 +153,7 @@ export class TmTyAbs extends Term {
   }
 
   toString(): string {
-    return "Fun. " + this.body.toString();
+    return "fun2. " + this.body.toString();
   }
 
   shift(c: number, d: number): Term {
