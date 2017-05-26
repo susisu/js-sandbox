@@ -1,7 +1,5 @@
 // @flow
 
-import { Stack } from "immutable";
-
 import {
   Type,
   TyVar,
@@ -14,7 +12,12 @@ import {
   TmAbs,
   TmApp,
   TmTyAbs,
-  TmTyApp
+  TmTyApp,
+  TyBinding,
+  TmBinding
+} from "./term.js";
+import type {
+  Context
 } from "./term.js";
 import {
   Type  as IxType,
@@ -30,56 +33,6 @@ import {
   TmTyAbs as IxTmTyAbs,
   TmTyApp as IxTmTyApp
 } from "./ixterm.js";
-
-// bindings and context
-export class Binding {
-  constructor() {
-  }
-}
-
-export class TyBinding extends Binding {
-  name: string;
-
-  constructor(name: string) {
-    super();
-    this.name = name;
-  }
-}
-
-export class TmBinding extends Binding {
-  name: string;
-  type: Type;
-
-  constructor(name: string, type: Type) {
-    super();
-    this.name = name;
-    this.type = type;
-  }
-}
-
-export type Context = Stack<Binding>;
-
-export class IxBinding {
-  constructor() {
-  }
-}
-
-export class IxTyBinding extends IxBinding {
-  constructor() {
-    super();
-  }
-}
-
-export class IxTmBinding extends IxBinding {
-  type: IxType;
-
-  constructor(type: IxType) {
-    super();
-    this.type = type;
-  }
-}
-
-export type IxContext = Stack<IxBinding>;
 
 // conversion from term to indexed term
 function findTyVarIndex(context: Context, name: string): number {

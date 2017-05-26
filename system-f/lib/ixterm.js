@@ -1,5 +1,7 @@
 // @flow
 
+import { Stack } from "immutable";
+
 import { Type } from "./ixtype.js";
 
 export class Term {
@@ -92,4 +94,31 @@ export class TmTyApp extends Term {
       : "(" + this.func.toString() + ")";
     return funcStr + " [" + this.arg.toString() + "]";
   }
+}
+
+// bindings and context
+export class Binding {
+  constructor() {
+  }
+}
+
+export class TyBinding extends Binding {
+  constructor() {
+    super();
+  }
+}
+
+export class TmBinding extends Binding {
+  type: Type;
+
+  constructor(type: Type) {
+    super();
+    this.type = type;
+  }
+}
+
+export type Context = Stack<Binding>;
+
+export function emptyContext(): Context {
+  return new Stack();
 }

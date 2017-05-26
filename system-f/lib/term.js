@@ -1,5 +1,7 @@
 // @flow
 
+import { Stack } from "immutable";
+
 import { Type } from "./type.js";
 
 export class Term {
@@ -97,4 +99,36 @@ export class TmTyApp extends Term {
       : "(" + this.func.toString() + ")";
     return funcStr + " [" + this.arg.toString() + "]";
   }
+}
+
+// bindings and context
+export class Binding {
+  constructor() {
+  }
+}
+
+export class TyBinding extends Binding {
+  name: string;
+
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
+}
+
+export class TmBinding extends Binding {
+  name: string;
+  type: Type;
+
+  constructor(name: string, type: Type) {
+    super();
+    this.name = name;
+    this.type = type;
+  }
+}
+
+export type Context = Stack<Binding>;
+
+export function emptyContext(): Context {
+  return new Stack();
 }
