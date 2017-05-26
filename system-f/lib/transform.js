@@ -55,12 +55,11 @@ export function toIndexedType(context: Context, type: Type): IxType {
     if (index < 0) {
       throw new Error("unbound type variable: " + type.name);
     }
-    return new IxTyVar(type.pos, type, index);
+    return new IxTyVar(type.pos, index);
   }
   else if (type instanceof TyArr) {
     return new IxTyArr(
       type.pos,
-      type,
       toIndexedType(context, type.dom),
       toIndexedType(context, type.codom)
     );
@@ -68,7 +67,6 @@ export function toIndexedType(context: Context, type: Type): IxType {
   else if (type instanceof TyAll) {
     return new IxTyAll(
       type.pos,
-      type,
       toIndexedType(
         context.unshift(new TyBinding(type.paramName)),
         type.body
@@ -86,12 +84,11 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
     if (index < 0) {
       throw new Error("unbound variable: " + term.name);
     }
-    return new IxTmVar(term.pos, term, index);
+    return new IxTmVar(term.pos, index);
   }
   else if (term instanceof TmAbs) {
     return new IxTmAbs(
       term.pos,
-      term,
       toIndexedType(context, term.paramType),
       toIndexedTerm(
         context.unshift(new TmBinding(term.paramName, term.paramType)),
@@ -102,7 +99,6 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   else if (term instanceof TmApp) {
     return new IxTmApp(
       term.pos,
-      term,
       toIndexedTerm(context, term.func),
       toIndexedTerm(context, term.arg)
     );
@@ -110,7 +106,6 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   else if (term instanceof TmTyAbs) {
     return new IxTmTyAbs(
       term.pos,
-      term,
       toIndexedTerm(
         context.unshift(new TyBinding(term.paramName)),
         term.body
@@ -120,7 +115,6 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   else if (term instanceof TmTyApp) {
     return new IxTmTyApp(
       term.pos,
-      term,
       toIndexedTerm(context, term.func),
       toIndexedType(context, term.arg)
     );

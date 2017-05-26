@@ -58,7 +58,7 @@ export function deduceIxType(context: IxContext, term: IxTerm): IxType {
       context.unshift(new IxTmBinding(term.paramType)),
       term.body
     );
-    return new IxTyArr(term.pos, undefined, term.paramType, bodyType.shift(1, -1));
+    return new IxTyArr(term.pos, term.paramType, bodyType.shift(1, -1));
   }
   else if (term instanceof IxTmApp) {
     const funcType = deduceIxType(context, term.func);
@@ -76,7 +76,7 @@ export function deduceIxType(context: IxContext, term: IxTerm): IxType {
       context.unshift(new IxTyBinding()),
       term.body
     );
-    return new IxTyAll(term.pos, undefined, bodyType);
+    return new IxTyAll(term.pos, bodyType);
   }
   else if (term instanceof IxTmTyApp) {
     const funcType = deduceIxType(context, term.func);

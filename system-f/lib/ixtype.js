@@ -1,15 +1,12 @@
 // @flow
 
 import type { Showable } from "./common.js";
-import { Type as OrigType } from "./type.js";
 
 export class Type {
   pos: Showable;
-  orig: ?OrigType;
 
-  constructor(pos: Showable, orig: ?OrigType) {
-    this.pos  = pos;
-    this.orig = orig;
+  constructor(pos: Showable) {
+    this.pos = pos;
   }
 
   toString(): string {
@@ -32,8 +29,8 @@ export class Type {
 export class TyVar extends Type {
   index: number;
 
-  constructor(pos: Showable, orig: ?OrigType, index: number) {
-    super(pos, orig);
+  constructor(pos: Showable, index: number) {
+    super(pos);
     this.index = index;
   }
 
@@ -43,7 +40,7 @@ export class TyVar extends Type {
 
   shift(c: number, d: number): Type {
     return this.index >= c
-      ? new TyVar(this.pos, this.orig, this.index + d)
+      ? new TyVar(this.pos, this.index + d)
       : this;
   }
 
@@ -63,8 +60,8 @@ export class TyArr extends Type {
   dom: Type;
   codom: Type;
 
-  constructor(pos: Showable, orig: ?OrigType, dom: Type, codom: Type) {
-    super(pos, orig);
+  constructor(pos: Showable, dom: Type, codom: Type) {
+    super(pos);
     this.dom   = dom;
     this.codom = codom;
   }
@@ -79,7 +76,6 @@ export class TyArr extends Type {
   shift(c: number, d: number): Type {
     return new TyArr(
       this.pos,
-      this.orig,
       this.dom.shift(c, d),
       this.codom.shift(c, d)
     );
@@ -88,7 +84,6 @@ export class TyArr extends Type {
   subst(index: number, type: Type): Type {
     return new TyArr(
       this.pos,
-      this.orig,
       this.dom.subst(index, type),
       this.codom.subst(index, type)
     );
@@ -103,8 +98,8 @@ export class TyArr extends Type {
 export class TyAll extends Type {
   body: Type;
 
-  constructor(pos: Showable, orig: ?OrigType, body: Type) {
-    super(pos, orig);
+  constructor(pos: Showable, body: Type) {
+    super(pos);
     this.body = body;
   }
 
@@ -115,7 +110,6 @@ export class TyAll extends Type {
   shift(c: number, d: number): Type {
     return new TyAll(
       this.pos,
-      this.orig,
       this.body.shift(c + 1, d)
     );
   }
@@ -123,7 +117,6 @@ export class TyAll extends Type {
   subst(index: number, type: Type): Type {
     return new TyAll(
       this.pos,
-      this.orig,
       this.body.subst(index + 1, type.shift(0, 1))
     );
   }
