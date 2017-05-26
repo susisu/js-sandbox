@@ -11,6 +11,7 @@ import type {
 } from "./term.js";
 import {
   Type  as IxType,
+  TyVar as IxTyVar,
   TyArr as IxTyArr,
   TyAll as IxTyAll
 } from "./ixtype.js";
@@ -64,9 +65,12 @@ export function deduceIxType(context: IxContext, term: IxTerm): IxType {
     const funcType = deduceIxType(context, term.func);
     const argType  = deduceIxType(context, term.arg);
     if (!(funcType instanceof IxTyArr)) {
+      const domStr = argType instanceof IxTyVar
+         ? argType.toString()
+         : "(" + argType.toString() + ")";
       throw new Error(
           `TypeError at ${term.func.pos.toString()}:\n`
-        + `  expected: ${argType.toString()} -> ?\n`
+        + `  expected: ${domStr} -> ?\n`
         + `  actual  : ${funcType.toString()}`
       );
     }
