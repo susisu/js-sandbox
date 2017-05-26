@@ -1,33 +1,47 @@
 // @flow
 
 import {
-  Type,
-  TyArr,
-  TyAll
-} from "./ixtype.js";
+  Type
+} from "./type.js";
 import {
-  Term,
-  TmVar,
-  TmAbs,
-  TmApp,
-  TmTyAbs,
-  TmTyApp,
-  TyBinding,
-  TmBinding
-} from "./ixterm.js";
+  Term
+} from "./term.js";
 import type {
   Context
+} from "./term.js";
+import {
+  Type  as IxType,
+  TyArr as IxTyArr,
+  TyAll as IxTyAll
+} from "./ixtype.js";
+import {
+  Term      as IxTerm,
+  TmVar     as IxTmVar,
+  TmAbs     as IxTmAbs,
+  TmApp     as IxTmApp,
+  TmTyAbs   as IxTmTyAbs,
+  TmTyApp   as IxTmTyApp,
+  TyBinding as IxTyBinding,
+  TmBinding as IxTmBinding
 } from "./ixterm.js";
+import type {
+  Context as IxContext
+} from "./ixterm.js";
+import {
+  toIndexedTerm,
+  toIndexedContext,
+  fromIndexedType
+} from "./transform.js";
 
-function findTmVarType(context: Context, index: number): Type {
+function findIxTmVarType(context: IxContext, index: number): IxType {
   const b = context.get(index);
   if (b === undefined) {
     throw new RangeError("index is out of range: " + index.toString());
   }
-  else if (b instanceof TyBinding) {
+  else if (b instanceof IxTyBinding) {
     throw new Error("not a variable at " + index.toString());
   }
-  else if (b instanceof TmBinding) {
+  else if (b instanceof IxTmBinding) {
     return b.type.shift(0, index + 1);
   }
   else {
@@ -35,21 +49,21 @@ function findTmVarType(context: Context, index: number): Type {
   }
 }
 
-export function deduceType(context: Context, term: Term): Type {
-  if (term instanceof TmVar) {
-    return findTmVarType(context, term.index);
+export function deduceIxType(context: IxContext, term: IxTerm): IxType {
+  if (term instanceof IxTmVar) {
+    return findIxTmVarType(context, term.index);
   }
-  else if (term instanceof TmAbs) {
-    const bodyType = deduceType(
-      context.unshift(new TmBinding(term.paramType)),
+  else if (term instanceof IxTmAbs) {
+    const bodyType = deduceIxType(
+      context.unshift(new IxTmBinding(term.paramType)),
       term.body
     );
-    return new TyArr(term.paramType, bodyType.shift(1, -1));
+    return new IxTyArr(term.paramType, bodyType.shift(1, -1));
   }
-  else if (term instanceof TmApp) {
-    const funcType = deduceType(context, term.func);
-    const argType  = deduceType(context, term.arg);
-    if (!(funcType instanceof TyArr)) {
+  else if (term instanceof IxTmApp) {
+    const funcType = deduceIxType(context, term.func);
+    const argType  = deduceIxType(context, term.arg);
+    if (!(funcType instanceof IxTyArr)) {
       throw new Error("arrow type is required");
     }
     if (!funcType.dom.equals(argType)) {
@@ -57,16 +71,16 @@ export function deduceType(context: Context, term: Term): Type {
     }
     return funcType.codom;
   }
-  else if (term instanceof TmTyAbs) {
-    const bodyType = deduceType(
-      context.unshift(new TyBinding()),
+  else if (term instanceof IxTmTyAbs) {
+    const bodyType = deduceIxType(
+      context.unshift(new IxTyBinding()),
       term.body
     );
-    return new TyAll(bodyType);
+    return new IxTyAll(bodyType);
   }
-  else if (term instanceof TmTyApp) {
-    const funcType = deduceType(context, term.func);
-    if (!(funcType instanceof TyAll)) {
+  else if (term instanceof IxTmTyApp) {
+    const funcType = deduceIxType(context, term.func);
+    if (!(funcType instanceof IxTyAll)) {
       throw new Error("universal type is required");
     }
     return funcType.body.subst(0, term.arg.shift(0, 1)).shift(1, -1);
@@ -74,4 +88,11 @@ export function deduceType(context: Context, term: Term): Type {
   else {
     throw new Error("unknown term");
   }
+}
+
+export function deduceType(context: Context, term: Term): Type {
+  const ixterm    = toIndexedTerm(context, term);
+  const ixcontext = toIndexedContext(context);
+  const ixtype    = deduceIxType(ixcontext, ixterm);
+  return fromIndexedType(context, ixtype);
 }

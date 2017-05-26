@@ -26,12 +26,18 @@ import {
   TyAll as IxTyAll
 } from "./ixtype.js";
 import {
-  Term    as IxTerm,
-  TmVar   as IxTmVar,
-  TmAbs   as IxTmAbs,
-  TmApp   as IxTmApp,
-  TmTyAbs as IxTmTyAbs,
-  TmTyApp as IxTmTyApp
+  Term         as IxTerm,
+  TmVar        as IxTmVar,
+  TmAbs        as IxTmAbs,
+  TmApp        as IxTmApp,
+  TmTyAbs      as IxTmTyAbs,
+  TmTyApp      as IxTmTyApp,
+  TyBinding    as IxTyBinding,
+  TmBinding    as IxTmBinding,
+  emptyContext as emptyIxContext
+} from "./ixterm.js";
+import type {
+  Context as IxContext
 } from "./ixterm.js";
 
 // conversion from term to indexed term
@@ -110,6 +116,26 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
   else {
     throw new Error("unknown term");
   }
+}
+
+export function toIndexedContext(context: Context): IxContext {
+  let ixcontext = emptyIxContext();
+  let rest = context;
+  while (rest.size > 0) {
+    const b = rest.first();
+    rest    = rest.shift();
+    if (b instanceof TyBinding) {
+      ixcontext = ixcontext.unshift(new IxTyBinding());
+    }
+    else if (b instanceof TmBinding) {
+      const ixtype = toIndexedType(rest, b.type);
+      ixcontext = ixcontext.unshift(new IxTmBinding(ixtype));
+    }
+    else {
+      throw new Error("unknown binding");
+    }
+  }
+  return ixcontext.reverse();
 }
 
 // conversion from indexed term to ordinary term
