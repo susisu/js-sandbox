@@ -56,7 +56,7 @@ export class TmAbs extends Term {
 
   toString(): string {
     return "fun " + this.paramName
-      + " : " + this.paramType.toString()
+      + ": " + this.paramType.toString()
       + ". " + this.body.toString();
   }
 
