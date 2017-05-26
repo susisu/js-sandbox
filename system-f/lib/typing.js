@@ -64,10 +64,18 @@ export function deduceIxType(context: IxContext, term: IxTerm): IxType {
     const funcType = deduceIxType(context, term.func);
     const argType  = deduceIxType(context, term.arg);
     if (!(funcType instanceof IxTyArr)) {
-      throw new Error("arrow type is required");
+      throw new Error(
+          `TypeError at ${term.func.pos.toString()}:\n`
+        + `  expected: ${argType.toString()} -> ?\n`
+        + `  actual  : ${funcType.toString()}`
+      );
     }
     if (!funcType.dom.equals(argType)) {
-      throw new Error("domain and argument types do not match");
+      throw new Error(
+        `TypeError at ${term.arg.pos.toString()}:\n`
+      + `  expected: ${funcType.dom.toString()}\n`
+      + `  actual  : ${argType.toString()}`
+      );
     }
     return funcType.codom;
   }
@@ -81,7 +89,11 @@ export function deduceIxType(context: IxContext, term: IxTerm): IxType {
   else if (term instanceof IxTmTyApp) {
     const funcType = deduceIxType(context, term.func);
     if (!(funcType instanceof IxTyAll)) {
-      throw new Error("universal type is required");
+      throw new Error(
+          `TypeError at ${term.func.pos.toString()}:\n`
+        + "  expected: forall. ?\n"
+        + `  actual  : ${funcType.toString()}`
+      );
     }
     return funcType.body.subst(0, term.arg.shift(0, 1)).shift(1, -1);
   }
