@@ -27,6 +27,10 @@ export class Term {
   substType(index: number, type: Type): Term {
     throw new Error("not implemented");
   }
+
+  reduce(context: Context): Term {
+    throw new Error("not implemented");
+  }
 }
 
 export class TmVar extends Term {
@@ -55,6 +59,16 @@ export class TmVar extends Term {
 
   substType(index: number, type: Type): Term {
     return this;
+  }
+
+  reduce(context: Context): Term {
+    const b = getTmBinding(context, this.index);
+    if (b instanceof TmBindingWithTerm) {
+      return b.term.shift(0, this.index + 1).reduce(context);
+    }
+    else {
+      return this;
+    }
   }
 }
 
@@ -94,6 +108,14 @@ export class TmAbs extends Term {
       this.pos,
       this.paramType.subst(index, type),
       this.body.substType(index + 1, type.shift(0, 1))
+    );
+  }
+
+  reduce(context: Context): Term {
+    return new TmAbs(
+      this.pos,
+      this.paramType,
+      this.body.reduce(context.unshift(new TmBinding(this.paramType)))
     );
   }
 }
@@ -142,6 +164,19 @@ export class TmApp extends Term {
       this.arg.substType(index, type)
     );
   }
+
+  reduce(context: Context): Term {
+    const func = this.func.reduce(context);
+    const arg  = this.arg.reduce(context);
+    if (func instanceof TmAbs) {
+      return func.body.subst(0, arg.shift(0, 1))
+        .shift(1, -1)
+        .reduce(context);
+    }
+    else {
+      return new TmApp(this.pos, func, arg);
+    }
+  }
 }
 
 export class TmTyAbs extends Term {
@@ -174,6 +209,13 @@ export class TmTyAbs extends Term {
     return new TmTyAbs(
       this.pos,
       this.body.substType(index + 1, type.shift(0, 1))
+    );
+  }
+
+  reduce(context: Context): Term {
+    return new TmTyAbs(
+      this.pos,
+      this.body.reduce(context.unshift(new TyBinding()))
     );
   }
 }
@@ -218,6 +260,18 @@ export class TmTyApp extends Term {
       this.func.substType(index, type),
       this.arg.subst(index, type)
     );
+  }
+
+  reduce(context: Context): Term {
+    const func = this.func.reduce(context);
+    if (func instanceof TmTyAbs) {
+      return func.body.substType(0, this.arg.shift(0, 1))
+        .shift(1, -1)
+        .reduce(context);
+    }
+    else {
+      return new TmTyApp(this.pos, func, this.arg);
+    }
   }
 }
 
