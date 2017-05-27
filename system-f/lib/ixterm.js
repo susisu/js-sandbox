@@ -247,3 +247,35 @@ export type Context = Stack<Binding>;
 export function emptyContext(): Context {
   return new Stack();
 }
+
+export function getTyBinding(context: Context, index: number): TyBinding {
+  const b = context.get(index);
+  if (b === undefined) {
+    throw new RangeError("index out of range: " + index.toString());
+  }
+  if (b instanceof TmBinding) {
+    throw new Error("inconsistent binding: " + index.toString());
+  }
+  else if (b instanceof TyBinding) {
+    return b;
+  }
+  else {
+    throw new Error("unknown binding");
+  }
+}
+
+export function getTmBinding(context: Context, index: number): TmBinding {
+  const b = context.get(index);
+  if (b === undefined) {
+    throw new RangeError("index out of range: " + index.toString());
+  }
+  if (b instanceof TmBinding) {
+    return b;
+  }
+  else if (b instanceof TyBinding) {
+    throw new Error("inconsistent binding: " + index.toString());
+  }
+  else {
+    throw new Error("unknown binding");
+  }
+}

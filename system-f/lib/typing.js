@@ -16,14 +16,15 @@ import {
   TyAll as IxTyAll
 } from "./ixtype.js";
 import {
-  Term      as IxTerm,
-  TmVar     as IxTmVar,
-  TmAbs     as IxTmAbs,
-  TmApp     as IxTmApp,
-  TmTyAbs   as IxTmTyAbs,
-  TmTyApp   as IxTmTyApp,
-  TyBinding as IxTyBinding,
-  TmBinding as IxTmBinding
+  Term         as IxTerm,
+  TmVar        as IxTmVar,
+  TmAbs        as IxTmAbs,
+  TmApp        as IxTmApp,
+  TmTyAbs      as IxTmTyAbs,
+  TmTyApp      as IxTmTyApp,
+  TyBinding    as IxTyBinding,
+  TmBinding    as IxTmBinding,
+  getTmBinding as getIxTmBinding
 } from "./ixterm.js";
 import type {
   Context as IxContext
@@ -34,25 +35,9 @@ import {
   fromIndexedType
 } from "./transform.js";
 
-function findIxTmVarType(context: IxContext, index: number): IxType {
-  const b = context.get(index);
-  if (b === undefined) {
-    throw new RangeError("index out of range: " + index.toString());
-  }
-  if (b instanceof IxTmBinding) {
-    return b.type.shift(0, index + 1);
-  }
-  else if (b instanceof IxTyBinding) {
-    throw new Error("inconsistent binding: " + index.toString());
-  }
-  else {
-    throw new Error("unknown binding");
-  }
-}
-
 export function deduceIxType(context: IxContext, term: IxTerm): IxType {
   if (term instanceof IxTmVar) {
-    return findIxTmVarType(context, term.index);
+    return getIxTmBinding(context, term.index).type.shift(0, term.index + 1);
   }
   else if (term instanceof IxTmAbs) {
     const bodyType = deduceIxType(

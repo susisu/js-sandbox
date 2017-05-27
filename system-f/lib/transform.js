@@ -18,7 +18,11 @@ import {
   TmTyAbs,
   TmTyApp,
   TyBinding,
-  TmBinding
+  TmBinding,
+  findTyVarIndex,
+  findTmVarIndex,
+  getTyBinding,
+  getTmBinding
 } from "./term.js";
 import type {
   Context
@@ -45,14 +49,6 @@ import type {
 } from "./ixterm.js";
 
 // conversion from term to indexed term
-function findTyVarIndex(context: Context, name: string): number {
-  return context.findIndex(b => b instanceof TyBinding && b.name === name);
-}
-
-function findTmVarIndex(context: Context, name: string): number {
-  return context.findIndex(b => b instanceof TmBinding && b.name === name);
-}
-
 export function toIndexedType(context: Context, type: Type): IxType {
   if (type instanceof TyVar) {
     const index = findTyVarIndex(context, type.name);
@@ -155,41 +151,9 @@ export function toIndexedContext(context: Context): IxContext {
 }
 
 // conversion from indexed term to ordinary term
-function findTyVarName(context: Context, index: number): string {
-  const b = context.get(index);
-  if (b === undefined) {
-    throw new RangeError("index out of range: " + index.toString());
-  }
-  if (b instanceof TmBinding) {
-    throw new Error("inconsistent binding: " + index.toString());
-  }
-  else if (b instanceof TyBinding) {
-    return b.name;
-  }
-  else {
-    throw new Error("unknown binding");
-  }
-}
-
-function findTmVarName(context: Context, index: number): string {
-  const b = context.get(index);
-  if (b === undefined) {
-    throw new RangeError("index out of range: " + index.toString());
-  }
-  if (b instanceof TmBinding) {
-    return b.name;
-  }
-  else if (b instanceof TyBinding) {
-    throw new Error("inconsistent binding: " + index.toString());
-  }
-  else {
-    throw new Error("unknown binding");
-  }
-}
-
 function _fromIndexedType(context: Context, id: number, type: IxType): [number, Type] {
   if (type instanceof IxTyVar) {
-    return [id, new TyVar(type.pos, findTyVarName(context, type.index))];
+    return [id, new TyVar(type.pos, getTyBinding(context, type.index).name)];
   }
   else if (type instanceof IxTyArr) {
     const [id1, dom]   = _fromIndexedType(context, id, type.dom);
@@ -214,7 +178,7 @@ function _fromIndexedTerm(
   context: Context, tyid: number, tmid: number, term: IxTerm
 ): [number, number, Term] {
   if (term instanceof IxTmVar) {
-    return [tyid, tmid, new TmVar(term.pos, findTmVarName(context, term.index))];
+    return [tyid, tmid, new TmVar(term.pos, getTmBinding(context, term.index).name)];
   }
   else if (term instanceof IxTmAbs) {
     const [tyid1, paramType]   = _fromIndexedType(context, tyid, term.paramType);
