@@ -2,7 +2,6 @@
 
 import { Statement } from "./statement.js";
 
-declare function parseStatement(src: string): Statement;
 declare function parse(src: string): Array<Statement>;
 
-export { parseStatement, parse };
+export { parse };

@@ -165,7 +165,6 @@ const statement = lq.choice([
   stTheorem
 ]);
 
-const oneStatement = tp.whiteSpace.right(statement).left(lq.eof);
 const prog = lq.do(function* () {
   yield tp.whiteSpace;
   yield tp.semi.many();
@@ -173,16 +172,6 @@ const prog = lq.do(function* () {
   yield lq.eof;
   return stmts;
 });
-
-export function parseStatement(src) {
-  const res = lq.parse(oneStatement, "", src, undefined, { unicode: true, tabWidth: 4 });
-  if (res.success) {
-    return res.value;
-  }
-  else {
-    throw new SyntaxError("ParseError at " + res.error.toString());
-  }
-}
 
 export function parse(src) {
   const res = lq.parse(prog, "", src, undefined, { unicode: true, tabWidth: 4 });
