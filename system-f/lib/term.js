@@ -131,6 +131,15 @@ export class TmBinding extends Binding {
   }
 }
 
+export class TmBindingWithTerm extends TmBinding {
+  term: Term;
+
+  constructor(name: string, type: Type, term: Term) {
+    super(name, type);
+    this.term = term;
+  }
+}
+
 export type Context = Stack<Binding>;
 
 export function emptyContext(): Context {

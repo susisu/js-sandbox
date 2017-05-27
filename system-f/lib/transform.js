@@ -19,6 +19,7 @@ import {
   TmTyApp,
   TyBinding,
   TmBinding,
+  TmBindingWithTerm,
   findTyVarIndex,
   findTmVarIndex,
   getTyBinding,
@@ -34,15 +35,16 @@ import {
   TyAll as IxTyAll
 } from "./ixtype.js";
 import {
-  Term         as IxTerm,
-  TmVar        as IxTmVar,
-  TmAbs        as IxTmAbs,
-  TmApp        as IxTmApp,
-  TmTyAbs      as IxTmTyAbs,
-  TmTyApp      as IxTmTyApp,
-  TyBinding    as IxTyBinding,
-  TmBinding    as IxTmBinding,
-  emptyContext as emptyIxContext
+  Term              as IxTerm,
+  TmVar             as IxTmVar,
+  TmAbs             as IxTmAbs,
+  TmApp             as IxTmApp,
+  TmTyAbs           as IxTmTyAbs,
+  TmTyApp           as IxTmTyApp,
+  TyBinding         as IxTyBinding,
+  TmBinding         as IxTmBinding,
+  TmBindingWithTerm as IxTmBindingWithTerm,
+  emptyContext      as emptyIxContext
 } from "./ixterm.js";
 import type {
   Context as IxContext
@@ -140,8 +142,15 @@ export function toIndexedContext(context: Context): IxContext {
       ixcontext = ixcontext.unshift(new IxTyBinding());
     }
     else if (b instanceof TmBinding) {
-      const ixtype = toIndexedType(rest, b.type);
-      ixcontext = ixcontext.unshift(new IxTmBinding(ixtype));
+      if (b instanceof TmBindingWithTerm) {
+        const ixtype = toIndexedType(rest, b.type);
+        const ixterm = toIndexedTerm(rest, b.term);
+        ixcontext = ixcontext.unshift(new IxTmBindingWithTerm(ixtype, ixterm));
+      }
+      else {
+        const ixtype = toIndexedType(rest, b.type);
+        ixcontext = ixcontext.unshift(new IxTmBinding(ixtype));
+      }
     }
     else {
       throw new Error("unknown binding");
