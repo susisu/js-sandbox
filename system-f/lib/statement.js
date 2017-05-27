@@ -1,5 +1,7 @@
 // @flow
 
+import chalk from "chalk";
+
 import type {
   Showable
 } from "./common.js";
@@ -50,7 +52,7 @@ export class Variable extends Statement {
   }
 
   exec(context: Context): Context {
-    process.stdout.write(`${this.name} is assumed.\n`);
+    process.stdout.write(`${chalk.bold(this.name)} is assumed.\n`);
     return context.unshift(new TyBinding(this.name));
   }
 }
@@ -66,7 +68,7 @@ export class Axiom extends Statement {
   }
 
   exec(context: Context): Context {
-    process.stdout.write(`${this.name}: ${this.type.toString()} is assumed.\n`);
+    process.stdout.write(`${this.name}: ${chalk.bold(this.type.toString())} is assumed.\n`);
     return context.unshift(new TmBinding(this.name, this.type));
   }
 }
@@ -90,7 +92,7 @@ export class Theorem extends Statement {
       const ixcontext  = toIndexedContext(context);
       const ixactual   = deduceIxType(ixcontext, ixterm);
       if (ixactual.equals(ixexpected)) {
-        process.stdout.write(`${this.name}: ${this.type.toString()} is defined.\n`);
+        process.stdout.write(`${this.name}: ${chalk.bold(this.type.toString())} is defined.\n`);
         return context.unshift(new TmBindingWithTerm(this.name, this.type, this.term));
       }
       else {
@@ -98,8 +100,8 @@ export class Theorem extends Statement {
         process.stdout.write(
             `TypeError at ${this.pos.toString()}:\n`
           + "  defined type does not match\n"
-          + `  expected: ${this.type.toString()}\n`
-          + `  actual  : ${actual.toString()}\n`
+          + `  expected: ${chalk.bold(this.type.toString())}\n`
+          + `  actual  : ${chalk.bold(actual.toString())}\n`
         );
         return context;
       }
@@ -132,7 +134,7 @@ export class Define extends Statement {
       const ixcontext = toIndexedContext(context);
       const ixtype    = deduceIxType(ixcontext, ixterm);
       const type      = fromIndexedType(context, ixtype);
-      process.stdout.write(`${this.name}: ${type.toString()} is defined.\n`);
+      process.stdout.write(`${this.name}: ${chalk.bold(type.toString())} is defined.\n`);
       return context.unshift(new TmBindingWithTerm(this.name, type, this.term));
     }
     catch (err) {
@@ -172,8 +174,8 @@ export class Reduce extends Statement {
         process.stdout.write(
             `TypeError at ${this.pos.toString()}:\n`
           + "  something wrong happened while reduction"
-          + `  expected: ${expected.toString()}\n`
-          + `  actual  : ${actual.toString()}\n`
+          + `  expected: ${chalk.bold(expected.toString())}\n`
+          + `  actual  : ${chalk.bold(actual.toString())}\n`
         );
         return context;
       }
@@ -208,13 +210,13 @@ export class Print extends Statement {
     }
     else if (b instanceof TmBindingWithTerm) {
       process.stdout.write(
-          `${this.name}: ${b.type.toString()}\n`
+          `${this.name}: ${chalk.bold(b.type.toString())}\n`
         + `= ${b.term.toString()}\n`
       );
     }
     else {
       process.stdout.write(
-          `${this.name}: ${b.type.toString()}\n`
+          `${this.name}: ${chalk.bold(b.type.toString())}\n`
         + "= (assumed)\n"
       );
     }

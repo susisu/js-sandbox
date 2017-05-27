@@ -1,5 +1,7 @@
 // @flow
 
+import chalk from "chalk";
+
 import { Stack } from "immutable";
 
 import type { Showable } from "./common.js";
@@ -83,7 +85,8 @@ export class TmAbs extends Term {
   }
 
   toString(): string {
-    return "fun: " + this.paramType.toString()
+    return chalk.green("fun")
+      + ": " + chalk.bold(this.paramType.toString())
       + ". " + this.body.toString();
   }
 
@@ -188,7 +191,7 @@ export class TmTyAbs extends Term {
   }
 
   toString(): string {
-    return "fun2. " + this.body.toString();
+    return chalk.cyan("fun2") + ". " + this.body.toString();
   }
 
   shift(c: number, d: number): Term {
@@ -235,7 +238,7 @@ export class TmTyApp extends Term {
       = this.func instanceof TmVar || this.func instanceof TmApp || this.func instanceof TmTyApp
       ? this.func.toString()
       : "(" + this.func.toString() + ")";
-    return funcStr + " [" + this.arg.toString() + "]";
+    return funcStr + " [" + chalk.bold(this.arg.toString()) + "]";
   }
 
   shift(c: number, d: number): Term {

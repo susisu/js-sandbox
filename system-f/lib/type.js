@@ -1,5 +1,7 @@
 // @flow
 
+import chalk from "chalk";
+
 import type { Showable } from "./common.js";
 
 export class Type {
@@ -56,6 +58,7 @@ export class TyAll extends Type {
   }
 
   toString(): string {
-    return "forall " + this.paramName + ". " + this.body.toString();
+    return chalk.yellow("forall") + " " + this.paramName
+      + ". " + this.body.toString();
   }
 }

@@ -13,6 +13,7 @@
   "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^1.1.3",
     "immutable": "^3.8.1",
     "loquat": "^2.0.0",
     "loquat-token": "^2.0.0"
