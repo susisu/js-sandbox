@@ -58,7 +58,7 @@ export function toIndexedType(context: Context, type: Type): IxType {
     const index = findTyVarIndex(context, type.name);
     if (index < 0) {
       throw new ReferenceError(
-          `Error at ${type.pos.toString()}:\n`
+          `ReferenceError at ${type.pos.toString()}:\n`
         + `  unbound type variable: ${type.name}`
       );
     }
@@ -90,7 +90,7 @@ export function toIndexedTerm(context: Context, term: Term): IxTerm {
     const index = findTmVarIndex(context, term.name);
     if (index < 0) {
       throw new ReferenceError(
-          `Error at ${term.pos.toString()}:\n`
+          `ReferenceError at ${term.pos.toString()}:\n`
         + `  unbound variable: ${term.name}`
       );
     }
