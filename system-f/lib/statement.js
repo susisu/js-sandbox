@@ -9,7 +9,10 @@ import {
 import {
   Term,
   TyBinding,
-  TmBinding
+  TmBinding,
+  TmBindingWithTerm,
+  emptyContext,
+  findTmBinding
 } from "./term.js";
 import type {
   Context
@@ -18,7 +21,8 @@ import {
   toIndexedType,
   toIndexedTerm,
   toIndexedContext,
-  fromIndexedType
+  fromIndexedType,
+  fromIndexedTerm
 } from "./transform.js";
 import {
   deduceIxType
@@ -87,7 +91,7 @@ export class Theorem extends Statement {
       const actual    = deduceIxType(ixcontext, ixterm);
       if (actual.equals(expected)) {
         process.stdout.write(`${this.name}: ${this.type.toString()} is defined.\n`);
-        return context.unshift(new TmBinding(this.name, this.type));
+        return context.unshift(new TmBindingWithTerm(this.name, this.type, this.term));
       }
       else {
         const type = fromIndexedType(context, actual);
@@ -108,5 +112,103 @@ export class Theorem extends Statement {
       }
       return context;
     }
+  }
+}
+
+export class Define extends Statement {
+  name: string;
+  term: Term;
+
+  constructor(pos: Showable, name: string, term: Term) {
+    super(pos);
+    this.name = name;
+    this.term = term;
+  }
+
+  exec(context: Context): Context {
+    try {
+      const ixterm    = toIndexedTerm(context, this.term);
+      const ixcontext = toIndexedContext(context);
+      const ixtype    = deduceIxType(ixcontext, ixterm);
+      const type      = fromIndexedType(context, ixtype);
+      process.stdout.write(`${this.name}: ${type.toString()} is defined.\n`);
+      return context.unshift(new TmBindingWithTerm(this.name, type, this.term));
+    }
+    catch (err) {
+      if (err instanceof Error) {
+        process.stdout.write(err.message + "\n");
+      }
+      else {
+        process.stdout.write(String(err) + "\n");
+      }
+      return context;
+    }
+  }
+}
+
+export class Reduce extends Statement {
+  term: Term;
+
+  constructor(pos: Showable, term: Term) {
+    super(pos);
+    this.term = term;
+  }
+
+  exec(context: Context): Context {
+    try {
+      const ixterm    = toIndexedTerm(context, this.term);
+      const ixcontext = toIndexedContext(context);
+      deduceIxType(ixcontext, ixterm);
+      const reduced = fromIndexedTerm(context, ixterm.reduce(ixcontext));
+      process.stdout.write(`${reduced.toString()}\n`);
+    }
+    catch (err) {
+      if (err instanceof Error) {
+        process.stdout.write(err.message + "\n");
+      }
+      else {
+        process.stdout.write(String(err) + "\n");
+      }
+    }
+    return context;
+  }
+}
+
+export class Print extends Statement {
+  name: string;
+
+  constructor(pos: Showable, name: string) {
+    super(pos);
+    this.name = name;
+  }
+
+  exec(context: Context): Context {
+    const b = findTmBinding(context, this.name);
+    if (b === undefined) {
+      process.stdout.write("unbound variable: " + this.name + "\n");
+    }
+    else if (b instanceof TmBindingWithTerm) {
+      process.stdout.write(
+          `${this.name}: ${b.type.toString()}\n`
+        + `= ${b.term.toString()}\n`
+      );
+    }
+    else {
+      process.stdout.write(
+          `${this.name}: ${b.type.toString()}\n`
+        + "= (assumed)\n"
+      );
+    }
+    return context;
+  }
+}
+
+export class Clear extends Statement {
+  constructor(pos: Showable) {
+    super(pos);
+  }
+
+  exec(context: Context): Context {
+    return emptyContext();
   }
 }

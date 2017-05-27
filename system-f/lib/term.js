@@ -154,16 +154,36 @@ export function findTmVarIndex(context: Context, name: string): number {
   return context.findIndex(b => b instanceof TmBinding && b.name === name);
 }
 
+export function findTyBinding(context: Context, name: string): TyBinding | void {
+  const b = context.find(b => b instanceof TyBinding && b.name === name);
+  if (b instanceof TyBinding) {
+    return b;
+  }
+  else {
+    return undefined;
+  }
+}
+
+export function findTmBinding(context: Context, name: string): TmBinding | void {
+  const b = context.find(b => b instanceof TmBinding && b.name === name);
+  if (b instanceof TmBinding) {
+    return b;
+  }
+  else {
+    return undefined;
+  }
+}
+
 export function getTyBinding(context: Context, index: number): TyBinding {
   const b = context.get(index);
   if (b === undefined) {
     throw new RangeError("index out of range: " + index.toString());
   }
-  if (b instanceof TmBinding) {
-    throw new Error("inconsistent binding: " + index.toString());
-  }
-  else if (b instanceof TyBinding) {
+  if (b instanceof TyBinding) {
     return b;
+  }
+  else if (b instanceof TmBinding) {
+    throw new Error("inconsistent binding: " + index.toString());
   }
   else {
     throw new Error("unknown binding");
@@ -175,11 +195,11 @@ export function getTmBinding(context: Context, index: number): TmBinding {
   if (b === undefined) {
     throw new RangeError("index out of range: " + index.toString());
   }
-  if (b instanceof TmBinding) {
-    return b;
-  }
-  else if (b instanceof TyBinding) {
+  if (b instanceof TyBinding) {
     throw new Error("inconsistent binding: " + index.toString());
+  }
+  else if (b instanceof TmBinding) {
+    return b;
   }
   else {
     throw new Error("unknown binding");

@@ -1,8 +1,26 @@
 /* eslint-plugin-disable flowtype */
 
-import { TyVar, TyArr, TyAll } from "./type.js";
-import { TmVar, TmAbs, TmApp, TmTyAbs, TmTyApp } from "./term.js";
-import { Variable, Axiom, Theorem } from "./statement.js";
+import {
+  TyVar,
+  TyArr,
+  TyAll
+} from "./type.js";
+import {
+  TmVar,
+  TmAbs,
+  TmApp,
+  TmTyAbs,
+  TmTyApp
+} from "./term.js";
+import {
+  Variable,
+  Axiom,
+  Theorem,
+  Define,
+  Reduce,
+  Print,
+  Clear
+} from "./statement.js";
 
 import loquat from "loquat";
 import loquatToken from "loquat-token";
@@ -20,7 +38,8 @@ const tp = lq.makeTokenParser(new lq.LanguageDef({
   opLetter      : lq.oneOf("=:.->λΛ∀→"),
   reservedIds   : [
     "fun", "fun2", "forall",
-    "Variable", "Axiom", "Hypothesis", "Theorem", "Lemma", "Corollary"
+    "Variable", "Axiom", "Hypothesis", "Theorem", "Lemma", "Corollary",
+    "Define", "Reduce", "Print", "Clear"
   ],
   reservedOps: [
     ":", ".", "->", "λ", "Λ", "∀", "→",
@@ -135,6 +154,10 @@ const stTheoremDecl = lq.choice([
   tp.reserved("Lemma"),
   tp.reserved("Corollary")
 ]);
+const stDefineDecl = tp.reserved("Define");
+const stReduceDecl = tp.reserved("Reduce");
+const stPrintDecl  = tp.reserved("Print");
+const stClearDecl  = tp.reserved("Clear");
 const stVariable = lq.do(function* () {
   const pos = yield lq.getPosition;
   yield stVariableDecl;
@@ -146,23 +169,52 @@ const stAxiom = lq.do(function* () {
   yield stAxiomDecl;
   const name = yield tp.identifier;
   yield colon;
-  const prop = yield type;
-  return new Axiom(pos, name, prop);
+  const ty = yield type;
+  return new Axiom(pos, name, ty);
 });
 const stTheorem = lq.do(function* () {
   const pos = yield lq.getPosition;
   yield stTheoremDecl;
   const name = yield tp.identifier;
   yield colon;
-  const prop = yield type;
+  const ty = yield type;
   yield tp.reservedOp("=");
-  const proof = yield term;
-  return new Theorem(pos, name, prop, proof);
+  const tm = yield term;
+  return new Theorem(pos, name, ty, tm);
+});
+const stDefine = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stDefineDecl;
+  const name = yield tp.identifier;
+  yield tp.reservedOp("=");
+  const tm = yield term;
+  return new Define(pos, name, tm);
+});
+const stReduce = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stReduceDecl;
+  const tm = yield term;
+  return new Reduce(pos, tm);
+});
+const stPrint = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stPrintDecl;
+  const name = yield tp.identifier;
+  return new Print(pos, name);
+});
+const stClear = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stClearDecl;
+  return new Clear(pos);
 });
 const statement = lq.choice([
   stVariable,
   stAxiom,
-  stTheorem
+  stTheorem,
+  stDefine,
+  stReduce,
+  stPrint,
+  stClear
 ]);
 
 const prog = lq.do(function* () {
