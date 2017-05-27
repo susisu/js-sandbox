@@ -2,6 +2,7 @@
 
 import { TyVar, TyArr, TyAll } from "./type.js";
 import { TmVar, TmAbs, TmApp, TmTyAbs, TmTyApp } from "./term.js";
+import { Variable, Axiom, Theorem } from "./statement.js";
 
 import loquat from "loquat";
 import loquatToken from "loquat-token";
@@ -15,11 +16,17 @@ const tp = lq.makeTokenParser(new lq.LanguageDef({
   nestedComments: true,
   idStart       : lq.letter,
   idLetter      : lq.alphaNum.or(lq.char("'")),
-  opStart       : lq.oneOf(":.->λΛ∀→"),
-  opLetter      : lq.oneOf(":.->λΛ∀→"),
-  reservedIds   : ["fun", "fun2", "forall"],
-  reservedOps   : [":", ".", "->", "λ", "Λ", "∀", "→"],
-  caseSensitive : true
+  opStart       : lq.oneOf("=:.->λΛ∀→"),
+  opLetter      : lq.oneOf("=:.->λΛ∀→"),
+  reservedIds   : [
+    "fun", "fun2", "forall",
+    "Variable", "Axiom", "Hypothesis", "Theorem", "Lemma", "Corollary"
+  ],
+  reservedOps: [
+    ":", ".", "->", "λ", "Λ", "∀", "→",
+    "="
+  ],
+  caseSensitive: true
 }));
 
 const dot    = tp.reservedOp(".");
@@ -118,7 +125,64 @@ const tmApp = lq.do(function* () {
   );
 });
 
-const prog = tp.whiteSpace.right(term).left(lq.eof);
+const stVariableDecl = tp.reserved("Variable");
+const stAxiomDecl = lq.choice([
+  tp.reserved("Axiom"),
+  tp.reserved("Hypothesis")
+]);
+const stTheoremDecl = lq.choice([
+  tp.reserved("Theorem"),
+  tp.reserved("Lemma"),
+  tp.reserved("Corollary")
+]);
+const stVariable = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stVariableDecl;
+  const name = yield tp.identifier;
+  return new Variable(pos, name);
+});
+const stAxiom = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stAxiomDecl;
+  const name = yield tp.identifier;
+  yield colon;
+  const prop = yield type;
+  return new Axiom(pos, name, prop);
+});
+const stTheorem = lq.do(function* () {
+  const pos = yield lq.getPosition;
+  yield stTheoremDecl;
+  const name = yield tp.identifier;
+  yield colon;
+  const prop = yield type;
+  yield tp.reservedOp("=");
+  const proof = yield term;
+  return new Theorem(pos, name, prop, proof);
+});
+const statement = lq.choice([
+  stVariable,
+  stAxiom,
+  stTheorem
+]);
+
+const oneStatement = tp.whiteSpace.right(statement).left(lq.eof);
+const prog = lq.do(function* () {
+  yield tp.whiteSpace;
+  yield tp.semi.many();
+  const stmts = yield statement.sepEndBy(tp.semi);
+  yield lq.eof;
+  return stmts;
+});
+
+export function parseStatement(src) {
+  const res = lq.parse(oneStatement, "", src, undefined, { unicode: true, tabWidth: 4 });
+  if (res.success) {
+    return res.value;
+  }
+  else {
+    throw new SyntaxError("ParseError at " + res.error.toString());
+  }
+}
 
 export function parse(src) {
   const res = lq.parse(prog, "", src, undefined, { unicode: true, tabWidth: 4 });
@@ -126,6 +190,6 @@ export function parse(src) {
     return res.value;
   }
   else {
-    throw new SyntaxError(res.error.toString());
+    throw new SyntaxError("ParseError at " + res.error.toString());
   }
 }

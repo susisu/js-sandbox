@@ -1,7 +1,8 @@
 // @flow
 
-import { Term } from "./term.js";
+import { Statement } from "./statement.js";
 
-declare function parse(src: string): Term;
+declare function parseStatement(src: string): Statement;
+declare function parse(src: string): Array<Statement>;
 
-export { parse };
+export { parseStatement, parse };
