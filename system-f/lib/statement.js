@@ -85,20 +85,21 @@ export class Theorem extends Statement {
 
   exec(context: Context): Context {
     try {
-      const expected  = toIndexedType(context, this.type);
-      const ixterm    = toIndexedTerm(context, this.term);
-      const ixcontext = toIndexedContext(context);
-      const actual    = deduceIxType(ixcontext, ixterm);
-      if (actual.equals(expected)) {
+      const ixexpected = toIndexedType(context, this.type);
+      const ixterm     = toIndexedTerm(context, this.term);
+      const ixcontext  = toIndexedContext(context);
+      const ixactual   = deduceIxType(ixcontext, ixterm);
+      if (ixactual.equals(ixexpected)) {
         process.stdout.write(`${this.name}: ${this.type.toString()} is defined.\n`);
         return context.unshift(new TmBindingWithTerm(this.name, this.type, this.term));
       }
       else {
-        const type = fromIndexedType(context, actual);
+        const actual = fromIndexedType(context, ixactual);
         process.stdout.write(
-            `TypeError at ${this.type.pos.toString()}:\n`
+            `TypeError at ${this.pos.toString()}:\n`
+          + "  defined type does not match\n"
           + `  expected: ${this.type.toString()}\n`
-          + `  actual  : ${type.toString()}\n`
+          + `  actual  : ${actual.toString()}\n`
         );
         return context;
       }
@@ -156,11 +157,26 @@ export class Reduce extends Statement {
 
   exec(context: Context): Context {
     try {
-      const ixterm    = toIndexedTerm(context, this.term);
-      const ixcontext = toIndexedContext(context);
-      deduceIxType(ixcontext, ixterm);
-      const reduced = fromIndexedTerm(context, ixterm.reduce(ixcontext));
-      process.stdout.write(`${reduced.toString()}\n`);
+      const ixterm     = toIndexedTerm(context, this.term);
+      const ixcontext  = toIndexedContext(context);
+      const ixexpected = deduceIxType(ixcontext, ixterm);
+      const ixreduced  = ixterm.reduce(ixcontext);
+      const ixactual   = deduceIxType(ixcontext, ixreduced);
+      if (ixactual.equals(ixexpected)) {
+        const reduced = fromIndexedTerm(context, ixreduced);
+        process.stdout.write(`${reduced.toString()}\n`);
+      }
+      else {
+        const expected = fromIndexedType(context, ixexpected);
+        const actual   = fromIndexedType(context, ixactual);
+        process.stdout.write(
+            `TypeError at ${this.pos.toString()}:\n`
+          + "  something wrong happened while reduction"
+          + `  expected: ${expected.toString()}\n`
+          + `  actual  : ${actual.toString()}\n`
+        );
+        return context;
+      }
     }
     catch (err) {
       if (err instanceof Error) {
@@ -185,7 +201,10 @@ export class Print extends Statement {
   exec(context: Context): Context {
     const b = findTmBinding(context, this.name);
     if (b === undefined) {
-      process.stdout.write("unbound variable: " + this.name + "\n");
+      process.stdout.write(
+          `Reference Error at ${this.pos.toString()}:\n`
+        + `  unbound variable: ${this.name}\n`
+      );
     }
     else if (b instanceof TmBindingWithTerm) {
       process.stdout.write(
