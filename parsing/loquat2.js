@@ -31,15 +31,15 @@ const {
     eof
 } = _comb;
 
-let escapes = new Map();
+const escapes = new Map();
 escapes.set("b", "\b");
 escapes.set("f", "\f");
 escapes.set("n", "\n");
 escapes.set("r", "\r");
 escapes.set("t", "\t");
-let f = (_, escape) => {
-    let type = escape[0];
-    let hex  = escape.slice(1);
+const f = (_, escape) => {
+    const type = escape[0];
+    const hex  = escape.slice(1);
     if (type === "u") {
         return String.fromCharCode(parseInt(hex, 16));
     }
@@ -61,26 +61,26 @@ function lexeme(parser) {
     return left(parser, whitespace);
 }
 
-let lbrace   = lexeme(char("{"));
-let rbrace   = lexeme(char("}"));
-let lbracket = lexeme(char("["));
-let rbracket = lexeme(char("]"));
-let comma    = lexeme(char(","));
-let colon    = lexeme(char(":"));
+const lbrace   = lexeme(char("{"));
+const rbrace   = lexeme(char("}"));
+const lbracket = lexeme(char("["));
+const rbracket = lexeme(char("]"));
+const comma    = lexeme(char(","));
+const colon    = lexeme(char(":"));
 
 function commaSep(parser) {
     return sepBy(parser, lexeme(comma))
 }
 
-let nullLiteral  = then(lexeme(string("null")), pure(null));
-let trueLiteral  = then(lexeme(string("true")), pure(true));
-let falseLiteral = then(lexeme(string("false")), pure(false));
+const nullLiteral  = then(lexeme(string("null")), pure(null));
+const trueLiteral  = then(lexeme(string("true")), pure(true));
+const falseLiteral = then(lexeme(string("false")), pure(false));
 
-let stringLiteral = map(lexeme(regexp(/"((?:\\.|.)*?)"/, 1)), interpretEscapes);
+const stringLiteral = map(lexeme(regexp(/"((?:\\.|.)*?)"/, 1)), interpretEscapes);
 
-let numberLiteral = map(lexeme(regexp(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/, 0)), Number);
+const numberLiteral = map(lexeme(regexp(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/, 0)), Number);
 
-let value = lazy(() => choice([
+const value = lazy(() => choice([
     object,
     array,
     stringLiteral,
@@ -90,30 +90,30 @@ let value = lazy(() => choice([
     falseLiteral
 ]));
 
-let array = between(lbracket, rbracket, commaSep(value));
+const array = between(lbracket, rbracket, commaSep(value));
 
-let pair = bind(stringLiteral, k =>
+const pair = bind(stringLiteral, k =>
     then(colon,
         map(value, v =>
             [k, v]
         )
     )
 );
-let object = map(
+const object = map(
     between(lbrace, rbrace, commaSep(pair)),
     ps => {
-        let obj = {};
-        for (let p of ps) {
+        const obj = {};
+        for (const p of ps) {
             obj[p[0]] = p[1];
         }
         return obj;
     }
 );
 
-let json = left(right(whitespace, value), eof);
+const json = left(right(whitespace, value), eof);
 
 function _parse(src) {
-    let res = parse(json, "", src, undefined, { unicode: false });
+    const res = parse(json, "", src, undefined, { unicode: false });
     if (res.success) {
         return res.value;
     }
@@ -130,7 +130,7 @@ function _parse(src) {
 //         console.error(err);
 //         process.exit(1);
 //     }
-    let src1k = require("./1K_json.js");
+    const src1k = require("./1K_json.js");
     let data;
     console.time("parse");
     for (let k = 0; k < 1000; k++) {
