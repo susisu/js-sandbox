@@ -51,3 +51,35 @@ export class TmAbbrBind extends TmVarBind {
 }
 
 export type Context = Stack<Binding>;
+
+export function emptyContext(): Context {
+  return new Stack();
+}
+
+export function findTyVarIndex(ctx: Context, name: string): number {
+  return ctx.findIndex(bind => bind instanceof TyVarBind && bind.name === name);
+}
+
+export function findTmVarIndex(ctx: Context, name: string): number {
+  return ctx.findIndex(bind => bind instanceof TmVarBind && bind.name === name);
+}
+
+export function findTyVarBinding(ctx: Context, name: string): ?TyVarBind {
+  const bind = ctx.find(bind => bind instanceof TyVarBind && bind.name === name);
+  return bind instanceof TyVarBind ? bind : undefined;
+}
+
+export function findTmVarBinding(ctx: Context, name: string): ?TmVarBind {
+  const bind = ctx.find(bind => bind instanceof TmVarBind && bind.name === name);
+  return bind instanceof TmVarBind ? bind : undefined;
+}
+
+export function getTyVarBinding(ctx: Context, index: number): ?TyVarBind {
+  const bind = ctx.get(index);
+  return bind instanceof TyVarBind ? bind : undefined;
+}
+
+export function getTmVarBinding(ctx: Context, index: number): ?TmVarBind {
+  const bind = ctx.get(index);
+  return bind instanceof TmVarBind ? bind : undefined;
+}

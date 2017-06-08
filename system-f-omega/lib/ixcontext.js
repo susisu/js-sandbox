@@ -51,3 +51,17 @@ export class TmAbbrBind extends TmVarBind {
 }
 
 export type Context = Stack<Binding>;
+
+export function emptyContext(): Context {
+  return new Stack();
+}
+
+export function getTyVarBinding(ctx: Context, index: number): ?TyVarBind {
+  const bind = ctx.get(index);
+  return bind instanceof TyVarBind ? bind : undefined;
+}
+
+export function getTmVarBinding(ctx: Context, index: number): ?TmVarBind {
+  const bind = ctx.get(index);
+  return bind instanceof TmVarBind ? bind : undefined;
+}
