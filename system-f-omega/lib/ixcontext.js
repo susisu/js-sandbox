@@ -7,10 +7,7 @@ import type { Type } from "./ixtype.js";
 import type { Term } from "./ixterm.js";
 
 export class Binding {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
+  constructor() {
   }
 }
 
@@ -18,8 +15,8 @@ export class TyVarBind extends Binding {
   kind: Kind;
   type: ?Type;
 
-  constructor(name: string, kind: Kind, type: ?Type) {
-    super(name);
+  constructor(kind: Kind, type: ?Type) {
+    super();
     this.kind = kind;
     this.type = type;
   }
@@ -29,8 +26,8 @@ export class TmVarBind extends Binding {
   type: Type;
   term: ?Term;
 
-  constructor(name: string, type: Type, term: ?Term) {
-    super(name);
+  constructor(type: Type, term: ?Term) {
+    super();
     this.type = type;
     this.term = term;
   }
