@@ -16,36 +16,22 @@ export class Binding {
 
 export class TyVarBind extends Binding {
   kind: Kind;
+  type: ?Type;
 
-  constructor(name: string, kind: Kind) {
+  constructor(name: string, kind: Kind, type: ?Type) {
     super(name);
     this.kind = kind;
+    this.type = type;
   }
 }
 
 export class TmVarBind extends Binding {
   type: Type;
+  term: ?Term;
 
-  constructor(name: string, type: Type) {
+  constructor(name: string, type: Type, term: ?Term) {
     super(name);
     this.type = type;
-  }
-}
-
-export class TyAbbrBind extends TyVarBind {
-  type: Type;
-
-  constructor(name: string, kind: Kind, type: Type) {
-    super(name, kind);
-    this.type = type;
-  }
-}
-
-export class TmAbbrBind extends TmVarBind {
-  term: Term;
-
-  constructor(name: string, type: Type, term: Term) {
-    super(name, type);
     this.term = term;
   }
 }
