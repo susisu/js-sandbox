@@ -2,6 +2,8 @@
 
 export type Showable = { toString: () => string } | string;
 
+export const INTERNAL_POS = "<internal>";
+
 export function generateTyVarName(id: number): string {
   let name = "";
   let n    = id;
@@ -26,5 +28,13 @@ export function createReferenceError(pos: Showable, message: string): Error {
   return new Error(
       `Reference Error at ${pos.toString()}:\n`
     + `  ${message}`
+  );
+}
+
+export function createKindError(pos: Showable, expected: string, actual: string): Error {
+  return new Error(
+      `Kind Error at ${pos.toString()}:\n`
+    + `  expected: ${expected}\n`
+    + `  actual  : ${actual}`
   );
 }

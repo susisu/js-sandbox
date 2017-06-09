@@ -12,6 +12,10 @@ export class Kind {
   toString(): string {
     throw new Error("not implemented");
   }
+
+  equals(kind: Kind): boolean {
+    throw new Error("not implemented");
+  }
 }
 
 export class KnStar extends Kind {
@@ -21,6 +25,10 @@ export class KnStar extends Kind {
 
   toString(): string {
     return "*";
+  }
+
+  equals(kind: Kind): boolean {
+    return kind instanceof KnStar;
   }
 }
 
@@ -39,5 +47,11 @@ export class KnArr extends Kind {
       ? this.dom.toString()
       : "(" + this.dom.toString() + ")";
     return domStr + " => " + this.codom.toString();
+  }
+
+  equals(kind: Kind): boolean {
+    return kind instanceof KnArr
+      && this.dom.equals(kind.dom)
+      && this.codom.equals(kind.codom);
   }
 }
