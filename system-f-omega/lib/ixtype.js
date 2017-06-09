@@ -14,6 +14,10 @@ export class Type {
     throw new Error("not implemented");
   }
 
+  equals(type: Type): boolean {
+    throw new Error("not implemented");
+  }
+
   shift(cutoff: number, distance: number): Type {
     throw new Error("not implemented");
   }
@@ -33,6 +37,11 @@ export class TyVar extends Type {
 
   toStirng(): string {
     return this.index.toString();
+  }
+
+  equals(type: Type): boolean {
+    return type instanceof TyVar
+      && this.index === type.index;
   }
 
   shift(cutoff: number, distance: number): Type {
@@ -63,6 +72,12 @@ export class TyArr extends Type {
       ? this.dom.toString()
       : "(" + this.dom.toString() + ")";
     return domStr + " -> " + this.codom.toString();
+  }
+
+  equals(type: Type): boolean {
+    return type instanceof TyArr
+      && this.dom.equals(type.dom)
+      && this.codom.equals(type.codom);
   }
 
   shift(cutoff: number, distance: number): Type {
@@ -97,6 +112,12 @@ export class TyAll extends Type {
       + ". " + this.body.toString();
   }
 
+  equals(type: Type): boolean {
+    return type instanceof TyAll
+      && this.paramKind.equals(type.paramKind)
+      && this.body.equals(type.body);
+  }
+
   shift(cutoff: number, distance: number): Type {
     return new TyAll(
       this.pos,
@@ -127,6 +148,12 @@ export class TyAbs extends Type {
   toString(): string {
     return "fun:: " + this.paramKind.toString()
       + ". " + this.body.toString();
+  }
+
+  equals(type: Type): boolean {
+    return type instanceof TyAbs
+      && this.paramKind.equals(type.paramKind)
+      && this.body.equals(type.body);
   }
 
   shift(cutoff: number, distance: number): Type {
@@ -165,6 +192,12 @@ export class TyApp extends Type {
       ? this.arg.toString()
       : "(" + this.arg.toString() + ")";
     return funcStr + " " + argStr;
+  }
+
+  equals(type: Type): boolean {
+    return type instanceof TyApp
+      && this.func.equals(type.func)
+      && this.arg.equals(type.arg);
   }
 
   shift(cutoff: number, distance: number): Type {

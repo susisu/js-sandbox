@@ -38,3 +38,11 @@ export function createKindError(pos: Showable, expected: string, actual: string)
     + `  actual  : ${actual}`
   );
 }
+
+export function createTypeError(pos: Showable, expected: string, actual: string): Error {
+  return new Error(
+      `Type Error at ${pos.toString()}:\n`
+    + `  expected: ${expected}\n`
+    + `  actual  : ${actual}`
+  );
+}
