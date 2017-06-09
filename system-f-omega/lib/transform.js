@@ -1,6 +1,9 @@
 // @flow
 
-import type { Showable } from "./common.js";
+import {
+  type Showable,
+  createReferenceError
+} from "./common.js";
 import {
   generateTyVarName,
   generateTmVarName
@@ -52,13 +55,6 @@ import {
   TmVarBind as IxTmVarBind,
   emptyContext as emptyIxContext
 } from "./ixcontext.js";
-
-function createReferenceError(pos: Showable, message: string): Error {
-  return new Error(
-      `Reference Error at ${pos.toString()}:\n`
-    + `  ${message}`
-  );
-}
 
 export function toIndexedType(ctx: Context, type: Type): IxType {
   if (type instanceof TyVar) {

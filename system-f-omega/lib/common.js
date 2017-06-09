@@ -21,3 +21,10 @@ export function generateTmVarName(id: number): string {
   }
   return name;
 }
+
+export function createReferenceError(pos: Showable, message: string): Error {
+  return new Error(
+      `Reference Error at ${pos.toString()}:\n`
+    + `  ${message}`
+  );
+}
