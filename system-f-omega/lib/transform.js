@@ -1,7 +1,6 @@
 // @flow
 
 import {
-  type Showable,
   createReferenceError
 } from "./common.js";
 import {
