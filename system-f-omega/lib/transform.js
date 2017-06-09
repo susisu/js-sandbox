@@ -1,5 +1,6 @@
 // @flow
 
+import type { Showable } from "./common.js";
 import {
   generateTyVarName,
   generateTmVarName
@@ -52,14 +53,18 @@ import {
   emptyContext as emptyIxContext
 } from "./ixcontext.js";
 
+function createReferenceError(pos: Showable, message: string): Error {
+  return new Error(
+      `Reference Error at ${pos.toString()}:\n`
+    + `  ${message}`
+  );
+}
+
 export function toIndexedType(ctx: Context, type: Type): IxType {
   if (type instanceof TyVar) {
     const index = findTyVarIndex(ctx, type.name);
     if (index < 0) {
-      throw new Error(
-          `Reference Error at ${type.pos.toString()}:`
-        + `  unbound type variable: ${type.name}`
-      );
+      throw createReferenceError(type.pos, `unbound type variable: ${type.name}`);
     }
     return new IxTyVar(type.pos, index);
   }
@@ -92,10 +97,7 @@ export function toIndexedTerm(ctx: Context, term: Term): IxTerm {
   if (term instanceof TmVar) {
     const index = findTmVarIndex(ctx, term.name);
     if (index < 0) {
-      throw new Error(
-          `Reference Error at ${term.pos.toString()}:`
-        + `  unbound  variable: ${term.name}`
-      );
+      throw createReferenceError(term.pos, `unbound  variable: ${term.name}`);
     }
     return new IxTmVar(term.pos, index);
   }
@@ -155,7 +157,7 @@ function _fromIndexedType(ctx: Context, id: number, ixtype: IxType): [number, Ty
   if (ixtype instanceof IxTyVar) {
     const bind = getTyVarBinding(ctx, ixtype.index);
     if (!(bind instanceof TyVarBind)) {
-      throw new Error("");
+      throw new Error("type variable binding not found");
     }
     return [id, new TyVar(ixtype.pos, bind.name)];
   }
@@ -192,7 +194,7 @@ function _fromIndexedTerm(
   if (ixterm instanceof IxTmVar) {
     const bind = getTmVarBinding(ctx, ixterm.index);
     if (!(bind instanceof TmVarBind)) {
-      throw new Error("");
+      throw new Error("variable binding not found");
     }
     return [[tyid, tmid], new TmVar(ixterm.pos, bind.name)];
   }
