@@ -57,6 +57,7 @@ export class StTmAssume extends Statement {
 
   constructor(pos: Showable, name: string, type: Type) {
     super(pos);
+    this.name = name;
     this.type = type;
   }
 
