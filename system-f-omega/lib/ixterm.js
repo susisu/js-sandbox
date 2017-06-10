@@ -68,7 +68,7 @@ export class TmAbs extends Term {
   }
 
   toString(): string {
-    return "fun: " + this.paramType.toString()
+    return "fun : " + this.paramType.toString()
       + ". " + this.body.toString();
   }
 
@@ -154,7 +154,7 @@ export class TmTyAbs extends Term {
   }
 
   toString(): string {
-    return "fun:: " + this.paramKind.toString()
+    return "fun :: " + this.paramKind.toString()
       + ". " + this.body.toString();
   }
 

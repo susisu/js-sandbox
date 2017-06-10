@@ -45,7 +45,7 @@ export class StTyAssume extends Statement {
   }
 
   exec(state: State): State {
-    process.stdout.write(`Assumed: ${this.name}:: ${this.kind.toString()}\n`);
+    process.stdout.write(`${this.name} :: ${this.kind.toString()}\n`);
     const bind = new TyVarBind(this.name, this.kind);
     return state.addBinding(bind);
   }
@@ -61,7 +61,7 @@ export class StTmAssume extends Statement {
   }
 
   exec(state: State): State {
-    process.stdout.write(`Assumed: ${this.name}:: ${this.type.toString()}\n`);
+    process.stdout.write(`${this.name} : ${this.type.toString()}\n`);
     const bind = new TmVarBind(this.name, this.type);
     return state.addBinding(bind);
   }
@@ -89,7 +89,7 @@ export class StTyDefine extends Statement {
           throw createKindError(this.pos, thisKind.toString(), kind.toString());
         }
         process.stdout.write(
-            `Defined: ${this.name}:: ${thisKind.toString()}\n`
+            `${this.name} :: ${thisKind.toString()}\n`
           + `= ${this.type.toString()}\n`
         );
         const bind = new TyVarBind(this.name, thisKind, this.type);
@@ -97,7 +97,7 @@ export class StTyDefine extends Statement {
       }
       else {
         process.stdout.write(
-            `Defined: ${this.name}:: ${kind.toString()}\n`
+            `${this.name} :: ${kind.toString()}\n`
           + `= ${this.type.toString()}\n`
         );
         const bind = new TyVarBind(this.name, kind, this.type);
@@ -136,7 +136,7 @@ export class StTmDefine extends Statement {
         }
         else {
           process.stdout.write(
-              `Defined: ${this.name}:: ${thisType.toString()}\n`
+              `${this.name} : ${thisType.toString()}\n`
             + `= ${this.term.toString()}\n`
           );
           const bind = new TmVarBind(this.name, thisType, this.term);
@@ -146,7 +146,7 @@ export class StTmDefine extends Statement {
       else {
         const type = fromIndexedType(state.ctx, ixtype);
         process.stdout.write(
-            `Defined: ${this.name}:: ${type.toString()}\n`
+            `${this.name} : ${type.toString()}\n`
           + `= ${this.term.toString()}\n`
         );
         const bind = new TmVarBind(this.name, type, this.term);

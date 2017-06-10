@@ -60,7 +60,7 @@ export class TyAll extends Type {
 
   toString(): string {
     return "forall " + this.paramName
-      + ":: " + this.paramKind.toString()
+      + " :: " + this.paramKind.toString()
       + ". " + this.body.toString();
   }
 }
@@ -79,7 +79,7 @@ export class TyAbs extends Type {
 
   toString(): string {
     return "fun " + this.paramName
-      + ":: " + this.paramKind.toString()
+      + " :: " + this.paramKind.toString()
       + ". " + this.body.toString();
   }
 }
