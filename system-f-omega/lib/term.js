@@ -83,7 +83,7 @@ export class TmTyAbs extends Term {
   }
 
   toString(): string {
-    return "fun2 " + this.paramName
+    return "fun " + this.paramName
       + ":: " + this.paramKind.toString()
       + ". " + this.body.toString();
   }
