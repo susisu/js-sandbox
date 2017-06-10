@@ -5,7 +5,7 @@ import {
   createKindError,
   createTypeError
 } from "./common.js";
-import { Kind } from "./kind.js";
+import { Kind, KnStar } from "./kind.js";
 import { Type } from "./type.js";
 import type { Term } from "./term.js";
 import {
@@ -62,6 +62,11 @@ export class StTmAssume extends Statement {
   }
 
   exec(state: State): State {
+    const ixtype = toIndexedType(state.ctx, this.type);
+    const kind   = kindOf(state.ixctx, ixtype);
+    if (!(kind instanceof KnStar)) {
+      throw createKindError(this.pos, "*", kind.toString());
+    }
     process.stdout.write(`${this.name} : ${this.type.toString()}\n`);
     const bind = new TmVarBind(this.name, this.type);
     return state.addBinding(bind);
@@ -130,19 +135,21 @@ export class StTmDefine extends Statement {
       const ixtype = reduceType(state.ixctx, typeOf(state.ixctx, ixterm));
       if (this.type instanceof Type) {
         const thisType   = this.type;
-        const thisIxType = reduceType(state.ixctx, toIndexedType(state.ctx, thisType));
-        if (!ixtype.equals(thisIxType)) {
+        const thisIxType = toIndexedType(state.ctx, thisType);
+        const thisKind   = kindOf(state.ixctx, thisIxType);
+        if (!(thisKind instanceof KnStar)) {
+          throw createKindError(this.pos, "*", thisKind.toString());
+        }
+        if (!ixtype.equals(reduceType(state.ixctx, thisIxType))) {
           const type = fromIndexedType(state.ctx, ixtype);
           throw createTypeError(this.pos, thisType.toString(), type.toString());
         }
-        else {
-          process.stdout.write(
-              `${this.name} : ${thisType.toString()}\n`
-            + `= ${this.term.toString()}\n`
-          );
-          const bind = new TmVarBind(this.name, thisType, this.term);
-          return state.addBinding(bind);
-        }
+        process.stdout.write(
+            `${this.name} : ${thisType.toString()}\n`
+          + `= ${this.term.toString()}\n`
+        );
+        const bind = new TmVarBind(this.name, thisType, this.term);
+        return state.addBinding(bind);
       }
       else {
         const type = fromIndexedType(state.ctx, ixtype);
