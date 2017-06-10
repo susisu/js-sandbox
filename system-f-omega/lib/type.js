@@ -39,7 +39,7 @@ export class TyArr extends Type {
   }
 
   toString(): string {
-    const domStr = this.dom instanceof TyVar
+    const domStr = this.dom instanceof TyVar || this.dom instanceof TyApp
       ? this.dom.toString()
       : "(" + this.dom.toString() + ")";
     return domStr + " -> " + this.codom.toString();
