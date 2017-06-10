@@ -34,7 +34,7 @@ export class Statement {
   }
 }
 
-export class TyAssume extends Statement {
+export class StTyAssume extends Statement {
   name: string;
   kind: Kind;
 
@@ -51,7 +51,7 @@ export class TyAssume extends Statement {
   }
 }
 
-export class TmAssume extends Statement {
+export class StTmAssume extends Statement {
   name: string;
   type: Type;
 
@@ -67,7 +67,7 @@ export class TmAssume extends Statement {
   }
 }
 
-export class TyDefine extends Statement {
+export class StTyDefine extends Statement {
   name: string;
   kind: ?Kind;
   type: Type;
@@ -110,7 +110,7 @@ export class TyDefine extends Statement {
   }
 }
 
-export class TmDefine extends Statement {
+export class StTmDefine extends Statement {
   name: string;
   type: ?Type;
   term: Term;
