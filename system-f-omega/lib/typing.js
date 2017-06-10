@@ -49,7 +49,7 @@ export function typeOf(ctx: Context, term: Term): Type {
       throw createKindError(term.pos, "*", paramKind.toString());
     }
     const bind     = new TmVarBind(term.paramType);
-    const bodyType = typeOf(ctx.unshift(bind), term.body);
+    const bodyType = typeOf(ctx.unshift(bind), term.body).shift(1, -1);
     return new TyArr(INTERNAL_POS, term.paramType, bodyType);
   }
   else if (term instanceof TmApp) {
