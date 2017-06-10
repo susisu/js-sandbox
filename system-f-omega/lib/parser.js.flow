@@ -1,0 +1,7 @@
+// @flow
+
+import type { Statement } from "./statement.js";
+
+declare function parse(name: string, src: string): Array<Statement>;
+
+export { parse };
