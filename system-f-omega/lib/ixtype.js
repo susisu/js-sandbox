@@ -35,7 +35,7 @@ export class TyVar extends Type {
     this.index = index;
   }
 
-  toStirng(): string {
+  toString(): string {
     return this.index.toString();
   }
 
