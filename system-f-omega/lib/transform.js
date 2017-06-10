@@ -24,9 +24,10 @@ import {
   TmTyApp
 } from "./term.js";
 import {
-  type Context,
+  type Binding,
   TyVarBind,
   TmVarBind,
+  type Context,
   findTyVarIndex,
   findTmVarIndex,
   getTyVarBinding,
@@ -49,9 +50,10 @@ import {
   TmTyApp as IxTmTyApp
 } from "./ixterm.js";
 import {
-  type Context as IxContext,
+  type Binding as IxBinding,
   TyVarBind as IxTyVarBind,
   TmVarBind as IxTmVarBind,
+  type Context as IxContext,
   emptyContext as emptyIxContext
 } from "./ixcontext.js";
 
@@ -122,28 +124,32 @@ export function toIndexedTerm(ctx: Context, term: Term): IxTerm {
   }
 }
 
+export function toIndexedBinding(ctx: Context, bind: Binding): IxBinding {
+  if (bind instanceof TyVarBind) {
+    const ixtype = bind.type instanceof Type
+      ? toIndexedType(ctx, bind.type)
+      : undefined;
+    return new IxTyVarBind(bind.kind, ixtype);
+  }
+  else if (bind instanceof TmVarBind) {
+    const ixtype = toIndexedType(ctx, bind.type);
+    const ixterm = bind.term instanceof Term
+      ? toIndexedTerm(ctx, bind.term)
+      : undefined;
+    return new IxTmVarBind(ixtype, ixterm);
+  }
+  else {
+    throw new Error("unknown binding");
+  }
+}
+
 export function toIndexedContext(ctx: Context): IxContext {
   let ixctx = emptyIxContext();
   let rest  = ctx;
   while (rest.size > 0) {
     const bind = rest.first();
     rest       = rest.shift();
-    if (bind instanceof TyVarBind) {
-      const ixtype = bind.type instanceof Type
-        ? toIndexedType(rest, bind.type)
-        : undefined;
-      ixctx = ixctx.unshift(new IxTyVarBind(bind.kind, ixtype));
-    }
-    else if (bind instanceof TmVarBind) {
-      const ixtype = toIndexedType(rest, bind.type);
-      const ixterm = bind.term instanceof Term
-        ? toIndexedTerm(rest, bind.term)
-        : undefined;
-      ixctx = ixctx.unshift(new IxTmVarBind(ixtype, ixterm));
-    }
-    else {
-      throw new Error("unknown binding");
-    }
+    ixctx      = ixctx.unshift(toIndexedBinding(rest, bind));
   }
   return ixctx.reverse();
 }
