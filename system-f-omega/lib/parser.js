@@ -44,7 +44,7 @@ const tp = lq.makeTokenParser(new lq.LanguageDef({
   caseSensitive : true
 }));
 
-// utility functions
+// utilities
 function isTmVarName(name) {
   return /^[a-z]/.test(name);
 }
@@ -52,6 +52,9 @@ function isTmVarName(name) {
 function isTyVarName(name) {
   return /^[A-Z]/.test(name);
 }
+
+const invalidTmVarName = lq.unexpected("variable name must start with a lowercase letter");
+const invalidTyVarName = lq.unexpected("type variable name must start with an uppercase letter");
 
 // operators
 const dot         = tp.dot;
@@ -87,7 +90,7 @@ const tyVar = lq.do(function* () {
   const pos  = yield lq.getPosition;
   const name = yield tp.identifier;
   if (!isTyVarName(name)) {
-    throw lq.unexpected("type variable name must start with an uppercase letter");
+    throw invalidTyVarName;
   }
   return new TyVar(pos, name);
 });
@@ -96,7 +99,7 @@ const tyAll = lq.do(function* () {
   yield tp.reserved("forall");
   const paramName = yield tp.identifier;
   if (!isTyVarName(paramName)) {
-    throw lq.unexpected("type variable name must start with an uppercase letter");
+    throw invalidTyVarName;
   }
   yield doubleColon;
   const paramKind = yield kind;
@@ -109,7 +112,7 @@ const tyAbs = lq.do(function* () {
   yield tp.reserved("fun");
   const paramName = yield tp.identifier;
   if (!isTyVarName(paramName)) {
-    throw lq.unexpected("type variable name must start with an uppercase letter");
+    throw invalidTyVarName;
   }
   yield doubleColon;
   const paramKind = yield kind;
@@ -150,7 +153,7 @@ const tmVar = lq.do(function* () {
   const pos = yield lq.getPosition;
   const name = yield tp.identifier;
   if (!isTmVarName(name)) {
-    throw lq.unexpected("variable name must start with an lowercase letter");
+    throw invalidTmVarName;
   }
   return new TmVar(pos, name);
 });
