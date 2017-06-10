@@ -105,6 +105,7 @@ export class StTyDefine extends Statement {
       }
     }
     catch (err) {
+      process.stdout.write(err.message + "\n");
       return state;
     }
   }
@@ -153,6 +154,7 @@ export class StTmDefine extends Statement {
       }
     }
     catch (err) {
+      process.stdout.write(err.message + "\n");
       return state;
     }
   }
