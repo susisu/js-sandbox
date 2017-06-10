@@ -38,8 +38,9 @@ export function weakReduceType(ctx: Context, type: Type): Type {
     return type;
   }
   else if (type instanceof TyApp) {
-    if (type.func instanceof TyAbs) {
-      const newType = type.func.body.subst(0, type.arg.shift(0, 1)).shift(1, -1);
+    const func = weakReduceType(ctx, type.func);
+    if (func instanceof TyAbs) {
+      const newType = func.body.subst(0, type.arg.shift(0, 1)).shift(1, -1);
       return weakReduceType(ctx, newType);
     }
     else {
@@ -81,8 +82,9 @@ export function reduceType(ctx: Context, type: Type): Type {
     return new TyAbs(type.pos, type.paramKind, body);
   }
   else if (type instanceof TyApp) {
-    if (type.func instanceof TyAbs) {
-      const newType = type.func.body.subst(0, type.arg.shift(0, 1)).shift(1, -1);
+    const func = reduceType(ctx, type.func);
+    if (func instanceof TyAbs) {
+      const newType = func.body.subst(0, type.arg.shift(0, 1)).shift(1, -1);
       return reduceType(ctx, newType);
     }
     else {
