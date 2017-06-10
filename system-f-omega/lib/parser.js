@@ -185,7 +185,7 @@ const tmSingle = lq.lazy(() => lq.choice([
 ]));
 const tmArg = lq.choice([
   tmSingle.map(tm => ({ type: "term", entity: tm })),
-  tp.brackets(tmSingle).map(tm => ({ type: "type", entity: tm }))
+  tp.brackets(type).map(tm => ({ type: "type", entity: tm }))
 ]);
 const tmApp = lq.do(function* () {
   const func = yield tmSingle;
