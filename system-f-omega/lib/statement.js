@@ -86,33 +86,27 @@ export class StTyDefine extends Statement {
   }
 
   exec(state: State): State {
-    try {
-      const ixtype = toIndexedType(state.ctx, this.type);
-      const kind   = kindOf(state.ixctx, ixtype);
-      if (this.kind instanceof Kind) {
-        const thisKind = this.kind;
-        if (!kind.equals(thisKind)) {
-          throw createKindError(this.pos, thisKind.toString(), kind.toString());
-        }
-        process.stdout.write(
-            `${this.name} :: ${thisKind.toString()}\n`
-          + `= ${this.type.toString()}\n`
-        );
-        const bind = new TyVarBind(this.name, thisKind, this.type);
-        return state.addBinding(bind);
+    const ixtype = toIndexedType(state.ctx, this.type);
+    const kind   = kindOf(state.ixctx, ixtype);
+    if (this.kind instanceof Kind) {
+      const thisKind = this.kind;
+      if (!kind.equals(thisKind)) {
+        throw createKindError(this.pos, thisKind.toString(), kind.toString());
       }
-      else {
-        process.stdout.write(
-            `${this.name} :: ${kind.toString()}\n`
-          + `= ${this.type.toString()}\n`
-        );
-        const bind = new TyVarBind(this.name, kind, this.type);
-        return state.addBinding(bind);
-      }
+      process.stdout.write(
+          `${this.name} :: ${thisKind.toString()}\n`
+        + `= ${this.type.toString()}\n`
+      );
+      const bind = new TyVarBind(this.name, thisKind, this.type);
+      return state.addBinding(bind);
     }
-    catch (err) {
-      process.stdout.write(err.message + "\n");
-      return state;
+    else {
+      process.stdout.write(
+          `${this.name} :: ${kind.toString()}\n`
+        + `= ${this.type.toString()}\n`
+      );
+      const bind = new TyVarBind(this.name, kind, this.type);
+      return state.addBinding(bind);
     }
   }
 }
@@ -130,40 +124,34 @@ export class StTmDefine extends Statement {
   }
 
   exec(state: State): State {
-    try {
-      const ixterm = toIndexedTerm(state.ctx, this.term);
-      const ixtype = reduceType(state.ixctx, typeOf(state.ixctx, ixterm));
-      if (this.type instanceof Type) {
-        const thisType   = this.type;
-        const thisIxType = toIndexedType(state.ctx, thisType);
-        const thisKind   = kindOf(state.ixctx, thisIxType);
-        if (!(thisKind instanceof KnStar)) {
-          throw createKindError(this.pos, "*", thisKind.toString());
-        }
-        if (!ixtype.equals(reduceType(state.ixctx, thisIxType))) {
-          const type = fromIndexedType(state.ctx, ixtype);
-          throw createTypeError(this.pos, thisType.toString(), type.toString());
-        }
-        process.stdout.write(
-            `${this.name} : ${thisType.toString()}\n`
-          + `= ${this.term.toString()}\n`
-        );
-        const bind = new TmVarBind(this.name, thisType, this.term);
-        return state.addBinding(bind);
+    const ixterm = toIndexedTerm(state.ctx, this.term);
+    const ixtype = reduceType(state.ixctx, typeOf(state.ixctx, ixterm));
+    if (this.type instanceof Type) {
+      const thisType   = this.type;
+      const thisIxType = toIndexedType(state.ctx, thisType);
+      const thisKind   = kindOf(state.ixctx, thisIxType);
+      if (!(thisKind instanceof KnStar)) {
+        throw createKindError(this.pos, "*", thisKind.toString());
       }
-      else {
+      if (!ixtype.equals(reduceType(state.ixctx, thisIxType))) {
         const type = fromIndexedType(state.ctx, ixtype);
-        process.stdout.write(
-            `${this.name} : ${type.toString()}\n`
-          + `= ${this.term.toString()}\n`
-        );
-        const bind = new TmVarBind(this.name, type, this.term);
-        return state.addBinding(bind);
+        throw createTypeError(this.pos, thisType.toString(), type.toString());
       }
+      process.stdout.write(
+          `${this.name} : ${thisType.toString()}\n`
+        + `= ${this.term.toString()}\n`
+      );
+      const bind = new TmVarBind(this.name, thisType, this.term);
+      return state.addBinding(bind);
     }
-    catch (err) {
-      process.stdout.write(err.message + "\n");
-      return state;
+    else {
+      const type = fromIndexedType(state.ctx, ixtype);
+      process.stdout.write(
+          `${this.name} : ${type.toString()}\n`
+        + `= ${this.term.toString()}\n`
+      );
+      const bind = new TmVarBind(this.name, type, this.term);
+      return state.addBinding(bind);
     }
   }
 }

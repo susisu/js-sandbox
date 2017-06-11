@@ -22,9 +22,8 @@ function interact() {
     buffer += line + "\n";
     const semi = buffer.indexOf(";");
     if (semi >= 0) {
-      let stmts;
       try {
-        stmts = parse("<interactive>", buffer);
+        const stmts = parse("<interactive>", buffer);
         for (let i = 0; i < stmts.length; i++) {
           const stmt = stmts[i];
           state = stmt.exec(state);
