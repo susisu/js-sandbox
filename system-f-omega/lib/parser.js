@@ -37,10 +37,10 @@ const tp = lq.makeTokenParser(new lq.LanguageDef({
   nestedComments: true,
   idStart       : lq.letter,
   idLetter      : lq.alphaNum.or(lq.char("'")),
-  opStart       : lq.oneOf("=.:->"),
-  opLetter      : lq.oneOf("=.:->"),
+  opStart       : lq.oneOf("=:->"),
+  opLetter      : lq.oneOf("=:->"),
   reservedIds   : ["fun", "forall", "assume", "define"],
-  reservedOps   : [".", ":", "->", "::", "=>"],
+  reservedOps   : ["=", ":", "->", "::", "=>"],
   caseSensitive : true
 }));
 
@@ -53,11 +53,20 @@ function isTyVarName(name) {
   return /^[A-Z]/.test(name);
 }
 
-const invalidTmVarName = lq.unexpected("variable name must start with a lowercase letter");
-const invalidTyVarName = lq.unexpected("type variable name must start with an uppercase letter");
+function failWithPos(pos, msgStr) {
+  return new lq.Parser(state => lq.Result.cerr(
+    new lq.ParseError(pos, [new lq.ErrorMessage(lq.ErrorMessageType.MESSAGE, msgStr)])
+  ));
+}
+
+function invalidTmVarName(pos) {
+  return failWithPos(pos, "variable name must start with a lowercase letter");
+}
+function invalidTyVarName(pos) {
+  return failWithPos(pos, "type variable name must start with an uppercase letter");
+}
 
 // operators
-const dot         = tp.dot;
 const star        = tp.symbol("*");
 const arrow       = tp.reservedOp("->");
 const thickArrow  = tp.reservedOp("=>");
@@ -90,7 +99,7 @@ const tyVar = lq.do(function* () {
   const pos  = yield lq.getPosition;
   const name = yield tp.identifier;
   if (!isTyVarName(name)) {
-    throw invalidTyVarName;
+    throw invalidTyVarName(pos);
   }
   return new TyVar(pos, name);
 });
@@ -99,11 +108,11 @@ const tyAll = lq.do(function* () {
   yield tp.reserved("forall");
   const paramName = yield tp.identifier;
   if (!isTyVarName(paramName)) {
-    throw invalidTyVarName;
+    throw invalidTyVarName(pos);
   }
   yield doubleColon;
   const paramKind = yield kind;
-  yield dot;
+  yield tp.dot;
   const body = yield tyArr;
   return new TyAll(pos, paramName, paramKind, body);
 });
@@ -112,11 +121,11 @@ const tyAbs = lq.do(function* () {
   yield tp.reserved("fun");
   const paramName = yield tp.identifier;
   if (!isTyVarName(paramName)) {
-    throw invalidTyVarName;
+    throw invalidTyVarName(pos);
   }
   yield doubleColon;
   const paramKind = yield kind;
-  yield dot;
+  yield tp.dot;
   const body = yield tyArr;
   return new TyAbs(pos, paramName, paramKind, body);
 });
@@ -153,7 +162,7 @@ const tmVar = lq.do(function* () {
   const pos = yield lq.getPosition;
   const name = yield tp.identifier;
   if (!isTmVarName(name)) {
-    throw invalidTmVarName;
+    throw invalidTmVarName(pos);
   }
   return new TmVar(pos, name);
 });
@@ -164,14 +173,14 @@ const tmAbs = lq.do(function* () {
   if (isTmVarName(paramName)) {
     yield colon;
     const paramType = yield type;
-    yield dot;
+    yield tp.dot;
     const body = yield tmTot;
     return new TmAbs(pos, paramName, paramType, body);
   }
   else if (isTyVarName(paramName)) {
     yield doubleColon;
     const paramKind = yield kind;
-    yield dot;
+    yield tp.dot;
     const body = yield tmTot;
     return new TmTyAbs(pos, paramName, paramKind, body);
   }
@@ -280,6 +289,12 @@ export function parse(name, src) {
     return res.value;
   }
   else {
-    throw new Error(res.error.toString());
+    throw new Error(
+        `Parse Error at ${res.error.pos.toString()}\n`
+      + lq.ErrorMessage.messagesToString(res.error.msgs)
+        .split("\n")
+        .map(msgStr => "  " + msgStr)
+        .join("\n")
+    );
   }
 }
