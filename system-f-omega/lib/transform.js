@@ -28,6 +28,7 @@ import {
   TyVarBind,
   TmVarBind,
   type Context,
+  emptyContext,
   findTyVarIndex,
   findTmVarIndex,
   getTyVarBinding,
@@ -144,14 +145,13 @@ export function toIndexedBinding(ctx: Context, bind: Binding): IxBinding {
 }
 
 export function toIndexedContext(ctx: Context): IxContext {
-  let ixctx = emptyIxContext();
-  let rest  = ctx;
-  while (rest.size > 0) {
-    const bind = rest.first();
-    rest       = rest.shift();
-    ixctx      = ixctx.unshift(toIndexedBinding(rest, bind));
-  }
-  return ixctx.reverse();
+  return ctx.reduceRight(
+    ([ctx, ixctx], bind) => [
+      ctx.unshift(bind),
+      ixctx.unshift(toIndexedBinding(ctx, bind))
+    ],
+    [emptyContext(), emptyIxContext()]
+  )[1];
 }
 
 function _fromIndexedType(ctx: Context, id: number, ixtype: IxType): [number, Type] {
