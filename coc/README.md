@@ -30,7 +30,7 @@ assume succ_nat_is_nat : forall x : U. is_nat x -> is_nat (succ x);
 define plus_two : U -> U
 = fun x : U. succ (succ x);
 
-(* proof that the return value of plus_two is a natural number *)
+(* proof of the fact that the return value of `plus_two zero` is a natural number *)
 define zero_plus_two_is_nat : is_nat (plus_two zero)
 = succ_nat_is_nat (succ zero) (
     succ_nat_is_nat zero zero_is_nat
