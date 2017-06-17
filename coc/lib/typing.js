@@ -40,11 +40,7 @@ export function typeOf(ctx: Context, term: Term): Term {
     const ctx1         = ctx.unshift(bind);
     const bodyType     = typeOf(ctx1, term.body);
     const bodyTypeType = weakReduce(ctx1, typeOf(ctx1, bodyType));
-    if (paramTypeType instanceof TmProp && !(bodyTypeType instanceof TmProp)) {
-      throw createTypeError(term.body.pos, "*", bodyTypeType.toString());
-    }
-    if (paramTypeType instanceof TmType
-      && !(bodyTypeType instanceof TmProp) && !(bodyTypeType instanceof TmType)) {
+    if (!(bodyTypeType instanceof TmProp) && !(bodyTypeType instanceof TmType)) {
       throw createTypeError(term.body.pos, "* or #", bodyTypeType.toString());
     }
     return new TmProd(INTERNAL_POS, term.paramType, bodyType);
@@ -69,11 +65,7 @@ export function typeOf(ctx: Context, term: Term): Term {
     const bind     = new Binding(term.paramType);
     const ctx1     = ctx.unshift(bind);
     const bodyType = weakReduce(ctx1, typeOf(ctx1, term.body));
-    if (paramTypeType instanceof TmProp && !(bodyType instanceof TmProp)) {
-      throw createTypeError(term.body.pos, "*", bodyType.toString());
-    }
-    if (paramTypeType instanceof TmType
-      && !(bodyType instanceof TmProp) && !(bodyType instanceof TmType)) {
+    if (!(bodyType instanceof TmProp) && !(bodyType instanceof TmType)) {
       throw createTypeError(term.body.pos, "* or #", bodyType.toString());
     }
     return bodyType instanceof TmProp
