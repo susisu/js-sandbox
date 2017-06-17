@@ -59,7 +59,7 @@ export function typeOf(ctx: Context, term: Term): Term {
     if (!argType.equals(domType)) {
       throw createTypeError(term.arg.pos, domType.toString(), argType.toString());
     }
-    return funcType.body.subst(0, argType.shift(0, 1)).shift(1, -1);
+    return funcType.body.subst(0, term.arg.shift(0, 1)).shift(1, -1);
   }
   else if (term instanceof TmProd) {
     const paramTypeType = weakReduce(ctx, typeOf(ctx, term.paramType));
