@@ -127,7 +127,7 @@ export class TmProd extends Term {
   }
 
   toString(): string {
-    return "( : " + this.paramType.toString()
+    return "(: " + this.paramType.toString()
       + ") -> " + this.body.toString();
   }
 
