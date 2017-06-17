@@ -24,7 +24,7 @@ const tp = lq.makeTokenParser(new lq.LanguageDef({
   commentEnd    : "*)",
   nestedComments: true,
   idStart       : lq.letter,
-  idLetter      : lq.alphaNum.or(lq.char("'")),
+  idLetter      : lq.alphaNum.or(lq.oneOf("'_")),
   opStart       : lq.oneOf("=:.->"),
   opLetter      : lq.oneOf("=:.->"),
   reservedIds   : ["fun", "forall", "assume", "define"],
