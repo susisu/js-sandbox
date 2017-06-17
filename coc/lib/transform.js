@@ -10,7 +10,8 @@ import {
   TmAbs,
   TmApp,
   TmProd,
-  TmProp
+  TmProp,
+  TmType
 } from "./term.js";
 import {
   Binding,
@@ -25,7 +26,8 @@ import {
   TmAbs as IxTmAbs,
   TmApp as IxTmApp,
   TmProd as IxTmProd,
-  TmProp as IxTmProp
+  TmProp as IxTmProp,
+  TmType as IxTmType
 } from "./ixterm.js";
 import {
   Binding as IxBinding,
@@ -60,6 +62,9 @@ export function toIndexedTerm(ctx: Context, term: Term): IxTerm {
   }
   else if (term instanceof TmProp) {
     return new IxTmProp(term.pos);
+  }
+  else if (term instanceof TmType) {
+    return new IxTmType(term.pos);
   }
   else {
     throw new Error(`unknown term: ${term.toString()}`);
@@ -113,6 +118,9 @@ function _fromIndexedTerm(ctx: Context, id: number, ixterm: IxTerm): [number, Te
   }
   else if (ixterm instanceof IxTmProp) {
     return [id, new TmProp(ixterm.pos)];
+  }
+  else if (ixterm instanceof IxTmType) {
+    return [id, new TmType(ixterm.pos)];
   }
   else {
     throw new Error(`unknown term: ${ixterm.toString()}`);

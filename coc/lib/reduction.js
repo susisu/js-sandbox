@@ -6,7 +6,8 @@ import {
   TmAbs,
   TmApp,
   TmProd,
-  TmProp
+  TmProp,
+  TmType
 } from "./ixterm.js";
 import {
   Binding,
@@ -46,6 +47,9 @@ export function weakReduce(ctx: Context, term: Term): Term {
     return term;
   }
   else if (term instanceof TmProp) {
+    return term;
+  }
+  else if (term instanceof TmType) {
     return term;
   }
   else {
@@ -91,6 +95,9 @@ export function reduce(ctx: Context, term: Term): Term {
     return new TmProd(term.pos, paramType, body);
   }
   else if (term instanceof TmProp) {
+    return term;
+  }
+  else if (term instanceof TmType) {
     return term;
   }
   else {
