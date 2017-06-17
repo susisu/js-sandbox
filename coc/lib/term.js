@@ -95,3 +95,13 @@ export class TmProp extends Term {
     return "*";
   }
 }
+
+export class TmType extends Term {
+  constructor(pos: Showable) {
+    super(pos);
+  }
+
+  toString(): string {
+    return "#";
+  }
+}

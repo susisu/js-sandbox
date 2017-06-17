@@ -196,3 +196,25 @@ export class TmProp extends Term {
     return term instanceof TmProp;
   }
 }
+
+export class TmType extends Term {
+  constructor(pos: Showable) {
+    super(pos);
+  }
+
+  toString(): string {
+    return "#";
+  }
+
+  shift(cut: number, dist: number): Term {
+    return this;
+  }
+
+  subst(index: number, term: Term): Term {
+    return this;
+  }
+
+  equals(term: Term): boolean {
+    return term instanceof TmType;
+  }
+}
