@@ -10,7 +10,8 @@ import {
   TmAbs,
   TmApp,
   TmProd,
-  TmProp
+  TmProp,
+  TmType
 } from "./ixterm.js";
 import {
   Binding,
@@ -31,8 +32,21 @@ export function typeOf(ctx: Context, term: Term): Term {
     return bind.type.shift(0, term.index + 1);
   }
   else if (term instanceof TmAbs) {
-    const bind     = new Binding(term.paramType);
-    const bodyType = typeOf(ctx.unshift(bind), term.body);
+    const paramTypeType = weakReduce(ctx, typeOf(ctx, term.paramType));
+    if (!(paramTypeType instanceof TmProp) && !(paramTypeType instanceof TmType)) {
+      throw createTypeError(term.paramType.pos, "* or #", paramTypeType.toString());
+    }
+    const bind         = new Binding(term.paramType);
+    const ctx1         = ctx.unshift(bind);
+    const bodyType     = typeOf(ctx1, term.body);
+    const bodyTypeType = weakReduce(ctx1, typeOf(ctx1, bodyType));
+    if (paramTypeType instanceof TmProp && !(bodyTypeType instanceof TmProp)) {
+      throw createTypeError(term.body.pos, "*", bodyTypeType.toString());
+    }
+    if (paramTypeType instanceof TmType
+      && !(bodyTypeType instanceof TmProp) && !(bodyTypeType instanceof TmType)) {
+      throw createTypeError(term.body.pos, "* or #", bodyTypeType.toString());
+    }
     return new TmProd(INTERNAL_POS, term.paramType, bodyType);
   }
   else if (term instanceof TmApp) {
@@ -48,18 +62,31 @@ export function typeOf(ctx: Context, term: Term): Term {
     return funcType.body.subst(0, argType.shift(0, 1)).shift(1, -1);
   }
   else if (term instanceof TmProd) {
+    const paramTypeType = weakReduce(ctx, typeOf(ctx, term.paramType));
+    if (!(paramTypeType instanceof TmProp) && !(paramTypeType instanceof TmType)) {
+      throw createTypeError(term.paramType.pos, "* or #", paramTypeType.toString());
+    }
     const bind     = new Binding(term.paramType);
     const ctx1     = ctx.unshift(bind);
     const bodyType = weakReduce(ctx1, typeOf(ctx1, term.body));
-    if (!(bodyType instanceof TmProp)) {
+    if (paramTypeType instanceof TmProp && !(bodyType instanceof TmProp)) {
       throw createTypeError(term.body.pos, "*", bodyType.toString());
     }
-    return new TmProp(INTERNAL_POS);
+    if (paramTypeType instanceof TmType
+      && !(bodyType instanceof TmProp) && !(bodyType instanceof TmType)) {
+      throw createTypeError(term.body.pos, "* or #", bodyType.toString());
+    }
+    return bodyType instanceof TmProp
+      ? new TmProp(INTERNAL_POS)
+      : new TmType(INTERNAL_POS);
   }
   else if (term instanceof TmProp) {
+    return new TmType(INTERNAL_POS);
+  }
+  else if (term instanceof TmType) {
     throw new Error(
         `Type Error at ${term.pos.toString()}:\n`
-      + "  cannot type *"
+      + "  cannot type #"
     );
   }
   else {
