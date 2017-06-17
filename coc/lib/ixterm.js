@@ -20,6 +20,10 @@ export class Term {
   subst(index: number, term: Term): Term {
     throw new Error("not implemented");
   }
+
+  equals(term: Term): boolean {
+    throw new Error("not implemented");
+  }
 }
 
 export class TmVar extends Term {
@@ -44,6 +48,11 @@ export class TmVar extends Term {
     return this.index === index
       ? term
       : this;
+  }
+
+  equals(term: Term): boolean {
+    return term instanceof TmVar
+      && this.index === term.index;
   }
 }
 
@@ -76,6 +85,12 @@ export class TmAbs extends Term {
       this.paramType.subst(index, term),
       this.body.subst(index + 1, term.shift(0, 1))
     );
+  }
+
+  equals(term: Term): boolean {
+    return term instanceof TmAbs
+      && this.paramType.equals(term.paramType)
+      && this.body.equals(term.body);
   }
 }
 
@@ -114,6 +129,12 @@ export class TmApp extends Term {
       this.arg.subst(index, term)
     );
   }
+
+  equals(term: Term): boolean {
+    return term instanceof TmApp
+      && this.func.equals(term.func)
+      && this.arg.equals(term.arg);
+  }
 }
 
 export class TmProd extends Term {
@@ -146,6 +167,12 @@ export class TmProd extends Term {
       this.body.subst(index + 1, term.shift(0, 1))
     );
   }
+
+  equals(term: Term): boolean {
+    return term instanceof TmProd
+      && this.paramType.equals(term.paramType)
+      && this.body.equals(term.body);
+  }
 }
 
 export class TmProp extends Term {
@@ -163,5 +190,9 @@ export class TmProp extends Term {
 
   subst(index: number, term: Term): Term {
     return this;
+  }
+
+  equals(term: Term): boolean {
+    return term instanceof TmProp;
   }
 }
