@@ -58,9 +58,11 @@ export class TmApp extends Term {
 
   toString(): string {
     const funcStr = this.func instanceof TmVar || this.func instanceof TmApp
+      || this.func instanceof TmProp || this.func instanceof TmType
       ? this.func.toString()
       : "(" + this.func.toString() + ")";
     const argStr = this.arg instanceof TmVar
+      || this.func instanceof TmProp || this.func instanceof TmType
       ? this.arg.toString()
       : "(" + this.arg.toString() + ")";
     return funcStr + " " + argStr;
@@ -80,9 +82,18 @@ export class TmProd extends Term {
   }
 
   toString(): string {
-    return "(" + this.paramName
-      + " : " + this.paramType.toString()
-      + ") -> " + this.body.toString();
+    if (this.paramName === "") {
+      const domStr = this.paramType instanceof TmVar
+        || this.paramType instanceof TmProp || this.paramType instanceof TmType
+        ? this.paramType.toString()
+        : "(" + this.paramType.toString() + ")";
+      return domStr + " -> " + this.body.toString();
+    }
+    else {
+      return "forall " + this.paramName
+        + " : " + this.paramType.toString()
+        + ". " + this.body.toString();
+    }
   }
 }
 
