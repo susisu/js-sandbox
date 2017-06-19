@@ -12,6 +12,10 @@ export class Term {
   toString(): string {
     throw new Error("not implemented");
   }
+
+  contains(name: string): boolean {
+    throw new Error("not implemented");
+  }
 }
 
 export class TmVar extends Term {
@@ -24,6 +28,10 @@ export class TmVar extends Term {
 
   toString(): string {
     return this.name;
+  }
+
+  contains(name: string): boolean {
+    return this.name === name;
   }
 }
 
@@ -43,6 +51,11 @@ export class TmAbs extends Term {
     return "fun " + this.paramName
       + " : " + this.paramType.toString()
       + ". " + this.body.toString();
+  }
+
+  contains(name: string): boolean {
+    return this.paramType.contains(name)
+      || (this.paramName !== name && this.body.contains(name));
   }
 }
 
@@ -67,6 +80,10 @@ export class TmApp extends Term {
       : "(" + this.arg.toString() + ")";
     return funcStr + " " + argStr;
   }
+
+  contains(name: string): boolean {
+    return this.func.contains(name) || this.arg.contains(name);
+  }
 }
 
 export class TmProd extends Term {
@@ -82,18 +99,23 @@ export class TmProd extends Term {
   }
 
   toString(): string {
-    if (this.paramName === "") {
+    if (this.body.contains(this.paramName)) {
+      return "forall " + this.paramName
+        + " : " + this.paramType.toString()
+        + ". " + this.body.toString();
+    }
+    else {
       const domStr = this.paramType instanceof TmVar
         || this.paramType instanceof TmProp || this.paramType instanceof TmType
         ? this.paramType.toString()
         : "(" + this.paramType.toString() + ")";
       return domStr + " -> " + this.body.toString();
     }
-    else {
-      return "forall " + this.paramName
-        + " : " + this.paramType.toString()
-        + ". " + this.body.toString();
-    }
+  }
+
+  contains(name: string): boolean {
+    return this.paramType.contains(name)
+      || (this.paramName !== name && this.body.contains(name));
   }
 }
 
@@ -105,6 +127,10 @@ export class TmProp extends Term {
   toString(): string {
     return "*";
   }
+
+  contains(name: string): boolean {
+    return false;
+  }
 }
 
 export class TmType extends Term {
@@ -114,5 +140,9 @@ export class TmType extends Term {
 
   toString(): string {
     return "#";
+  }
+
+  contains(name: string): boolean {
+    return false;
   }
 }
