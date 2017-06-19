@@ -148,8 +148,11 @@ export class TmProd extends Term {
   }
 
   toString(): string {
-    return this.paramType.toString()
-      + " -> " + this.body.toString();
+    const domStr = this.paramType instanceof TmVar
+      || this.paramType instanceof TmProp || this.paramType instanceof TmType
+      ? this.paramType.toString()
+      : "(" + this.paramType.toString() + ")";
+    return domStr + " -> " + this.body.toString();
   }
 
   shift(cut: number, dist: number): Term {
