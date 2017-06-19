@@ -148,7 +148,7 @@ export class TmProd extends Term {
   }
 
   toString(): string {
-    const domStr = this.paramType instanceof TmVar
+    const domStr = this.paramType instanceof TmVar || this.paramType instanceof TmApp
       || this.paramType instanceof TmProp || this.paramType instanceof TmType
       ? this.paramType.toString()
       : "(" + this.paramType.toString() + ")";
