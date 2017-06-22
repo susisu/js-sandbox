@@ -26,13 +26,19 @@ assume is_nat : U -> *;
 assume zero_is_nat     : is_nat zero;
 assume succ_nat_is_nat : forall x : U. is_nat x -> is_nat (succ x);
 
-(* function on the universe *)
+(* function on the universe (not limited to the natural numbers) *)
 define plus_two : U -> U
 = fun x : U. succ (succ x);
 
-(* proof of the fact that the return value of `plus_two zero` is a natural number *)
-define zero_plus_two_is_nat : is_nat (plus_two zero)
-= succ_nat_is_nat (succ zero) (
-    succ_nat_is_nat zero zero_is_nat
+(* proof of the fact that `plus_two x` returns a natural number if so `x` is *)
+define nat_plus_two_is_nat: forall x : U. is_nat x -> is_nat (plus_two x)
+= fun x : U.
+  fun H : is_nat x.
+  succ_nat_is_nat (succ x) (
+    succ_nat_is_nat x H
   );
+
+(* instance of the general proof *)
+define zero_plus_two_is_nat : is_nat (plus_two zero)
+= nat_plus_two_is_nat zero zero_is_nat;
 ```
