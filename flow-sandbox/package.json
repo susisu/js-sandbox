@@ -1,0 +1,19 @@
+{
+  "name": "@susisu/flow-sandbox",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Susisu <susisu2413@yahoo.co.jp> (https://github.com/susisu)",
+  "license": "MIT",
+  "dependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "eslint": "^4.2.0",
+    "eslint-plugin-flowtype": "^2.35.0",
+    "flow-bin": "^0.50.0"
+  }
+}
