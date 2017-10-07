@@ -8,31 +8,31 @@ function distance(from, to) {
     return distance(to, from);
   }
   const maxi = new Array(fromLen + toLen + 1);
-  const offset = toLen;
+  const offset = fromLen;
   const delta = toLen - fromLen;
   for (let p = 0; p <= fromLen; p++) {
-    for (let k = -delta - p; k < -delta; k++) {
-      let i = k === -delta - p ? maxi[offset + k + 1]
-            : Math.max(maxi[offset + k + 1], maxi[offset + k - 1] + 1);
-      while (i < fromLen && i - k < toLen && from[i] === to[i - k]) {
+    for (let k = -p; k < delta; k++) {
+      let i = p === 0  ? 0
+            : k === -p ? maxi[offset + k + 1] + 1
+            : Math.max(maxi[offset + k + 1] + 1, maxi[offset + k - 1]);
+      while (i < fromLen && i + k < toLen && from[i] === to[i + k]) {
         i += 1;
       }
       maxi[offset + k] = i;
     }
-    for (let k = p; k > -delta; k--) {
-      let i = p === 0 ? 0
-            : k === p ? maxi[offset + k - 1] + 1
-            : Math.max(maxi[offset + k + 1], maxi[offset + k - 1] + 1);
-      while (i < fromLen && i - k < toLen && from[i] === to[i - k]) {
+    for (let k = delta + p; k > delta; k--) {
+      let i = k === delta + p ? maxi[offset + k - 1]
+            : Math.max(maxi[offset + k + 1] + 1, maxi[offset + k - 1]);
+      while (i < fromLen && i + k < toLen && from[i] === to[i + k]) {
         i += 1;
       }
       maxi[offset + k] = i;
     }
     {
-      const k = -delta;
+      const k = delta;
       let i = p === 0 ? 0
-            : Math.max(maxi[offset + k + 1], maxi[offset + k - 1] + 1);
-      while (i < fromLen && i - k < toLen && from[i] === to[i - k]) {
+            : Math.max(maxi[offset + k + 1] + 1, maxi[offset + k - 1]);
+      while (i < fromLen && i + k < toLen && from[i] === to[i + k]) {
         i += 1;
       }
       if (i === fromLen) {

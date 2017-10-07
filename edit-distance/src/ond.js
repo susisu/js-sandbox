@@ -9,13 +9,13 @@ function distance(from, to) {
   for (let d = 0; d <= fromLen + toLen; d++) {
     for (let k = -d; k <= d; k += 2) {
       let i = d === 0  ? 0
-            : k === -d ? maxi[offset + k + 1]
-            : k === d  ? maxi[offset + k - 1] + 1
-            : Math.max(maxi[offset + k + 1], maxi[offset + k - 1] + 1);
-      while (i < fromLen && i - k < toLen && from[i] === to[i - k]) {
+            : k === -d ? maxi[offset + k + 1] + 1
+            : k === d  ? maxi[offset + k - 1]
+            : Math.max(maxi[offset + k + 1] + 1, maxi[offset + k - 1]);
+      while (i < fromLen && i + k < toLen && from[i] === to[i + k]) {
         i += 1;
       }
-      if (k === fromLen - toLen && i === fromLen) {
+      if (k === toLen - fromLen && i === fromLen) {
         return d;
       }
       maxi[offset + k] = i;
