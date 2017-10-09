@@ -4,5 +4,9 @@ NAME=$1
 DATANAME=$2
 REP=$3
 
-$(dirname $0)/repeat.sh $NAME $DATANAME $REP \
+for t in `seq 1 $REP`;
+  do node "src/$NAME.js" < "data/$DATANAME.dat" \
+    | grep 'time' \
+    | gsed -e 's/time: \(.\+\)ms/\1/'
+done \
   | est -po '((transpose true))' '[avg $0, sd $0]' -
